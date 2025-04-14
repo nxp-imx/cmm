@@ -1,0 +1,10 @@
+config fastforward ftp
+        option proto            tcp
+        option port             21
+config fastforward sip
+        option proto            udp
+        option port             5060
+config fastforward pptp
+        option proto            tcp
+        option port             1723
+

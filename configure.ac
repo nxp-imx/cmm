@@ -1,0 +1,31 @@
+AC_INIT(CMM, 1.00.0)
+AM_INIT_AUTOMAKE
+
+AC_PROG_MAKE_SET
+AC_PROG_CC
+AC_PROG_LIBTOOL
+AC_PROG_INSTALL
+
+AC_CONFIG_MACRO_DIRS([m4])
+
+AC_ARG_WITH([cpal],
+	    AS_HELP_STRING([--with-cpal=bpf], [Use libbpf backend for CPAL]),
+	    [], [cpal=fci])
+AM_CONDITIONAL([CPAL_BPF], [test $with_cpal = "bpf"])
+
+
+package=cmm
+
+LIBNFCONNTRACK_REQUIRED=0.0.16
+PKG_CHECK_MODULES(LIBNFCONNTRACK, libnetfilter_conntrack >= $LIBNFCONNTRACK_REQUIRED,,
+	AC_MSG_ERROR(Cannot find libnetfilter_conntrack >= $LIBNFNCONNTRACK_REQUIRED))
+
+CFLAGS="$CFLAGS $LIBNFCONNTRACK_CFLAGS"
+CMM_LIBS="$LIBNFCONNTRACK_LIBS"
+AC_SUBST(CMM_LIBS)
+
+AC_CONFIG_FILES([
+	Makefile
+	src/Makefile
+])
+AC_OUTPUT

@@ -18,10 +18,10 @@
 
 #define CPAL_MAX_PAYLOAD 256
 
-#define PINNED_IPV4 "/sys/fs/bpf/xdp/globals/fp_ipv4"
-#define PINNED_IPV6 "/sys/fs/bpf/xdp/globals/fp_ipv6"
-#define PINNED_ROUTE "/sys/fs/bpf/xdp/globals/fp_route"
-#define PINNED_GLOBALS "/sys/fs/bpf/xdp/globals/fp_globals"
+#define PINNED_IPV4 "/sys/fs/bpf/fp_ipv4"
+#define PINNED_IPV6 "/sys/fs/bpf/fp_ipv6"
+#define PINNED_ROUTE "/sys/fs/bpf/fp_route"
+#define PINNED_GLOBALS "/sys/fs/bpf/fp_globals"
 
 // This variable needs to be accessed from various threads/handles, so cannot be kept in cpal_handle_t
 unsigned int current_timer = 0;

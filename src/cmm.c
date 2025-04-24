@@ -339,6 +339,7 @@ int main (int argc, char ** argv)
 	char *buf;
 	int ret = 0;
 	int ch;
+	int daemon_mode=1;
 
 	// Forward engine programmation is enabled by default
 	globalConf.enable = 1;
@@ -400,7 +401,7 @@ int main (int argc, char ** argv)
 	}
 
 	// Analyse the command line
-	while ((option = getopt(argc, argv, "c:f:n:hv")) != -1)
+	while ((option = getopt(argc, argv, "c:f:n:d:hv")) != -1)
 	{
 		switch (option)
 		{
@@ -420,6 +421,9 @@ int main (int argc, char ** argv)
 					fprintf(stderr, "sscanf failed, %s\n", strerror(errno));
 					exit(EXIT_FAILURE);
 				}
+				break;
+			case 'd': /* no daemon */
+				daemon_mode = 0;
 				break;
 
 			case 'h':	// Print help
@@ -442,7 +446,7 @@ int main (int argc, char ** argv)
 	}
 
 	// Daemonize the application
-	if(daemon(0, 1) == -1)
+	if(daemon_mode && daemon(0, 1) == -1)
 		goto err0;
 	//Ensure clean termination
 	action.sa_handler = sig_term_hdlr;

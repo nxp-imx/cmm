@@ -2953,7 +2953,7 @@ static void *cmmCtThread(void *data)
 	int need_resync = 0;
 	int rc;
 
-	cmm_print(DEBUG_INFO, "%s: pid %d\n", __func__, getpid());
+	cmm_print(DEBUG_CRIT, "%s: pid %d\n", __func__, getpid());
 
 #ifndef DPDK_ENABLE
 #if !defined(IPSEC_SUPPORT_DISABLED)
@@ -3000,7 +3000,7 @@ static void *cmmCtThread(void *data)
 		if (timer_expired)
 		{
 #if PPPOE_AUTO_ENABLE
-                        cmmPPPoEAutoKeepAlive();
+			cmmPPPoEAutoKeepAlive();
 #endif
 
 			cmmDPDIPsecSAUpdate(ctx);
@@ -3023,7 +3023,9 @@ static void *cmmCtThread(void *data)
 #if !defined(IPSEC_SUPPORT_DISABLED)
 		FD_SET (fd_key, &set);
 #endif
+#ifndef DPDK_ENABLE
 		FD_SET (fd_cpal, &set);
+#endif
 		FD_SET (fd_neigh, &set);
 		FD_SET (fd_link, &set);
 		FD_SET (fd_ifaddr, &set);
@@ -3192,7 +3194,6 @@ int cmmCtInit(struct cmm_ct *ctx)
 	int fd;
 	int i;
 	int size;
-	socklen_t socklen = sizeof(size);
 
 	cmm_print(DEBUG_INFO, "%s\n", __func__);
 
@@ -3311,20 +3312,20 @@ int cmmCtInit(struct cmm_ct *ctx)
 	}
 #endif
 #else
-        cmm_print(DEBUG_STDOUT, "%s: Configure for FPR connection\n", __func__);
-        ctx->unix_sock = socket(AF_UNIX, SOCK_STREAM, 0);
-        if (ctx->unix_sock == -1) {
-               cmm_print(DEBUG_CRIT, "%s: unix socket creation failed, %s\n", __func__, strerror(errno));
-               goto err6;
-        }
-        memset(&ctx->unix_addr, 0, sizeof(ctx->unix_addr));
-        ctx->unix_addr.sun_family = AF_UNIX;
-        strcpy(ctx->unix_addr.sun_path, FPR_CMM_PATH);
-        /* connecting only for once */
-        if (connect(ctx->unix_sock, (struct sockaddr *)&ctx->unix_addr, sizeof(ctx->unix_addr)) == -1) {
-               cmm_print(DEBUG_CRIT, "%s: Connect to unix socket fails, %s\n", __func__, strerror(errno));
-               goto err6;
-        }
+	cmm_print(DEBUG_STDOUT, "%s: Configure for FPR connection\n", __func__);
+	ctx->unix_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (ctx->unix_sock == -1) {
+		cmm_print(DEBUG_CRIT, "%s: unix socket creation failed, %s\n", __func__, strerror(errno));
+		goto err6;
+	}
+	memset(&ctx->unix_addr, 0, sizeof(ctx->unix_addr));
+	ctx->unix_addr.sun_family = AF_UNIX;
+	strcpy(ctx->unix_addr.sun_path, FPR_CMM_PATH);
+	/* connecting only for once */
+	if (connect(ctx->unix_sock, (struct sockaddr *)&ctx->unix_addr, sizeof(ctx->unix_addr)) == -1) {
+		cmm_print(DEBUG_CRIT, "%s: Connect to unix socket fails, %s\n", __func__, strerror(errno));
+		goto err6;
+	}
 #endif
 
 	// Open a Conntrack socket
@@ -3560,8 +3561,10 @@ void cmmCtExit(struct cmm_ct *ctx)
 
 #if defined(__UCLIBC__)
 	/* workaround uclibc pthread_cancel() bug, force thread to exit */
+#ifndef DPDK_ENABLE
 #if !defined(IPSEC_SUPPORT_DISABLED)
 	cpal_close(ctx->cpal_key_catch_handle);
+#endif
 #endif
 #else
 	pthread_cancel(ctx->pthread);
@@ -3582,7 +3585,7 @@ void cmmCtExit(struct cmm_ct *ctx)
 	nfct_close(ctx->handle);
 
 	nfct_close(ctx->catch_handle);
-
+#ifndef DPDK_ENABLE
 #if !defined(IPSEC_SUPPORT_DISABLED)
 	cpal_close(ctx->cpal_key_handle);
 
@@ -3593,7 +3596,7 @@ void cmmCtExit(struct cmm_ct *ctx)
 	cpal_close(ctx->cpal_handle);
 
 	cpal_close(ctx->cpal_catch_handle);
-
+#endif
 #ifdef APP_SOLICIT
 	cmmRtnlKernelModuleUnInit();
 #endif

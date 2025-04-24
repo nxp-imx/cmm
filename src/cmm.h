@@ -102,6 +102,7 @@
 	#define cmm_help 	"Usage : cmm [-c command] [-f configurationfile]-h -v \n" \
 							"-c command \tRun cmm to send a command. Need cmm daemon to be running\n" \
 							"-f conffile\tTell cmm to use the following configuration file. Available in daemon mode only\n" \
+							"-d         \t Do not run in daemon mode\n" \
 							"-h         \tPrint this help\n" \
 							"-v         \tPrint cmm version\n"
 

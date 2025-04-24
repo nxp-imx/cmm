@@ -39,6 +39,9 @@ struct fpp_pktcap_flf_cmd { /* First level filter */
     struct bpf_insn filter[MAX_FLF_INSTRUCTIONS];
 }__attribute__((__packed__));
 
+static int Check_BPFfilter(struct bpf_insn *filter, int flen);
+
+
 int PktCapSliceProcess(daemon_handle_t daemon_handle, int argc, char *argv[])
 {
 
@@ -296,7 +299,7 @@ reset_flf:
  * will also have to be made in fpp. 
  */
 
-int Check_BPFfilter(struct bpf_insn *filter, int flen)
+static int Check_BPFfilter(struct bpf_insn *filter, int flen)
 {
         struct bpf_insn *ftest;
         int pc;

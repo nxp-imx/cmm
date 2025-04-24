@@ -1236,10 +1236,11 @@ void cmmDaemonExit(struct cmm_daemon *ctx)
 #endif
 
 	pthread_join(ctx->pthread, NULL);
-
+#ifndef DPDK_ENABLE
 	cpal_close(ctx->cpal_handle);
 #if !defined(IPSEC_SUPPORT_DISABLED)
 	cpal_close(ctx->cpal_key_handle);
+#endif
 #endif
 #if !defined(__UCLIBC__)
 	msgctl(ctx->queueIdTx, IPC_RMID, NULL);

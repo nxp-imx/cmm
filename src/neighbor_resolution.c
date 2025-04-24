@@ -664,7 +664,7 @@ err:
 *
 *
 ******************************************************************/
-int cmmNeighShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmNeighShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	int i;
 	struct NeighborEntry *temp;
@@ -756,6 +756,7 @@ static void __cmmNeighborResolved(cpal_handle_t *cpal_handle, struct NeighborEnt
 	struct list_head *entry;
 	int key;
 
+	cmm_print(DEBUG_INFO, "%s: enter for mac:%s\n", __func__, neigh->macAddr);
 #ifndef VLAN_FILTER
 	/* Force lookup of bridge port */
 	neigh->port = -1;
@@ -919,7 +920,7 @@ static int cmmNeighborUpdate(struct cmm_ct *ctx, const struct sockaddr_nl *who, 
 	neigh->state = r->ndm_state;
 	cmm_print(DEBUG_INFO, "%s: old state = 0x%0x new state = 0x%0x\n", __func__, old_state, neigh->state);
 
-	if((r->ndm_state & NUD_REACHABLE) && (neigh->flags & NEEDS_SOLICIT))
+	if ((r->ndm_state & NUD_REACHABLE) && (neigh->flags & NEEDS_SOLICIT))
 	{
 		neigh->flags &= ~NEEDS_SOLICIT;
 		neigh->nr_probes = 0;
@@ -937,7 +938,7 @@ static int cmmNeighborUpdate(struct cmm_ct *ctx, const struct sockaddr_nl *who, 
 
 	/* Neigh entries which are not used by any conntrack are removed from CMM when
 	the corresponding neigh entry is deleted by Kernel. */
-	if(n->nlmsg_type == RTM_DELNEIGH && neigh->count <= 0)
+	if (n->nlmsg_type == RTM_DELNEIGH && neigh->count <= 0)
 	{
 		__cmmNeighRemove(neigh);
 		goto out;
@@ -1093,6 +1094,7 @@ int cmmRtnlNeigh(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg)
 
 	case RTM_NEWNEIGH:
 	case RTM_DELNEIGH:
+		cmm_print(DEBUG_INFO, "%s: received %s\n", __func__, (nlh->nlmsg_type == RTM_NEWNEIGH) ? "RTM_NEWNEIGH" : "RTM_DELNEIGH");
 		cmmNeighborUpdate(ctx, who, nlh);
 		break;
 

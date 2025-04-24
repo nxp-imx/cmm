@@ -172,7 +172,7 @@ static void __deladdr(struct ifaddrmsg *ifa, struct rtattr *tb[])
 	addr = __addr_find(itf, RTA_DATA(attr), RTA_PAYLOAD(attr));
 	if (!addr)
 	{
-		cmm_print(DEBUG_ERROR, "%s::%d: __addr_find failed\n", __func__, __LINE__);
+		cmm_print(DEBUG_ERROR, "%s::%d: __addr_find(%d) failed\n", __func__, __LINE__, ifa->ifa_index);
 		goto out;
 	}
 
@@ -809,7 +809,6 @@ static int __cmmGetMappingRuleFilter(const struct sockaddr_nl *nladdr, struct nl
 		mr_debug(itf);
 	}
 
-
 out:
 	return RTNL_CB_CONTINUE;
 }
@@ -870,7 +869,7 @@ static void __updatelink(struct interface_table *ctx, struct ifinfomsg *ifi, str
 #if defined(LS1043)
 	int was_bridged_port;
 #endif
-
+	cmm_print(DEBUG_INFO, "%s: enter(%d) dellink:%d\n", __func__, ifi->ifi_index, dellink);
 	itf = __itf_find(ifi->ifi_index);
 	if (!itf)
 	{
@@ -1030,6 +1029,7 @@ struct interface *__itf_find(int ifindex)
 		entry = list_next(entry);
 	}
 
+	cmm_print(DEBUG_INFO, "%s: interface(%d) not found\n", __func__, ifindex);
 	itf = NULL;
 
 found:
@@ -1242,14 +1242,14 @@ int itf_match_src_ipaddr(int ifindex, int family, unsigned int *ipaddr )
 		addr = container_of(entry, struct interface_addr, list);
 		if (addr->family == family)
 		{
-			if(!memcmp(ipaddr, addr->address, addr->len))
+			if (!memcmp(ipaddr, addr->address, addr->len))
 			{
-				cmm_print(DEBUG_INFO,"%s matches source address of interface %s",inet_ntop(family, ipaddr, address, sizeof(address)),
-													itf->ifname);
+				cmm_print(DEBUG_INFO,"%s matches source address of interface %s",
+					inet_ntop(family, ipaddr, address,
+					sizeof(address)), itf->ifname);
 				rc = 1;
 				break;
 			}
-
 		}
 	}
 
@@ -1273,6 +1273,7 @@ int itf_get_ipaddr(int ifindex, int family, unsigned char scope, unsigned int *i
 #ifdef IPSEC_FLOW_CACHE
 	__pthread_mutex_lock(&flowMutex);
 #endif /* IPSEC_FLOW_CACHE */
+	cmm_print(DEBUG_INFO,"%s: ifindex(%d)\n", __func__, ifindex);
 
 	itf = __itf_get(ifindex);
 	if (!itf)
@@ -1508,7 +1509,7 @@ int __itf_is_noarp(int ifindex)
 	if (!itf)
 		goto out;
 
-	if (itf->ifi_flags & IFF_NOARP)
+	if (itf->ifi_flags & IFF_NOARP || itf->type == ARPHRD_RAWIP)
 		rc = 1;
 	else
 		rc = 0;
@@ -1569,6 +1570,10 @@ out:
 int ____itf_is_programmed(struct interface *itf)
 {
 	int i;
+
+	/* WA to automatically handle RAWIP interfaces in FPP */
+	if (itf->type == ARPHRD_RAWIP)
+		return 1;
 
 	if (itf->flags & FPP_PROGRAMMED)
 		return 1;
@@ -1714,7 +1719,7 @@ int itf_table_init(struct interface_table *ctx)
 	LO_IFINDEX = if_nametoindex(LO_INTERFACE_NAME);
 	if (!LO_IFINDEX)
 		cmm_print(DEBUG_ERROR, "%s::%d: if_nametoindex(%s) failed\n", __func__, __LINE__, LO_INTERFACE_NAME);
-	
+
 	ctx->fp = fopen(PPPOE_PATH, "r");
 	/* we will retry later if it fails here, this happens when ppp modules are not loaded yet */
 
@@ -1760,11 +1765,12 @@ int itf_table_init(struct interface_table *ctx)
 
 	return 0;
 
-#if !defined(IPSEC_SUPPORT_DISABLED)
 err4:
+#ifndef DPDK_ENABLE
+#if !defined(IPSEC_SUPPORT_DISABLED)
 	cpal_close(ctx->cpal_handle);
 #endif
-
+#endif
 err3:
 	cmm_rtnl_close(&ctx->rth);
 
@@ -1857,7 +1863,7 @@ out:
 
 /*****************************************************************
 * cmmRtnlIfAddr
-* 
+*
 *
 ******************************************************************/
 int cmmRtnlIfAddr(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg)
@@ -1878,10 +1884,9 @@ int cmmRtnlIfAddr(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg
 	{
 #ifndef SAM_LEGACY
 	case RTM_NEW4RD:
-        case RTM_DEL4RD:
+	case RTM_DEL4RD:
 		{
 			mr = NLMSG_DATA(nlh);
-
 
 			if(nlh->nlmsg_type == RTM_NEW4RD)
 				mr_update(ctx->cpal_handle,mr);
@@ -1904,13 +1909,13 @@ int cmmRtnlIfAddr(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg
 		cmm_print(DEBUG_ERROR, "%s: unsupported IFADDR netlink message %x\n", __func__, nlh->nlmsg_type);
 		goto out;
 		break;
-	}	
+	}
 
 	ifa = NLMSG_DATA(nlh);
 
 	cmm_print(DEBUG_INFO, "%s: ifaddr family: %x, prefixlen: %d, flags: %x, scope: %d, index: %d\n", __func__,
-					ifa->ifa_family, ifa->ifa_prefixlen,
-					ifa->ifa_flags, ifa->ifa_scope, ifa->ifa_index);
+		ifa->ifa_family, ifa->ifa_prefixlen,
+		ifa->ifa_flags, ifa->ifa_scope, ifa->ifa_index);
 
 	cmm_parse_rtattr(tb, IFA_MAX, IFA_RTA(ifa), IFA_PAYLOAD(nlh));
 

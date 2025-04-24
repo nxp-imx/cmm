@@ -119,7 +119,8 @@ static int cmmRouteNetlinkLookup(struct flow *flow, struct RtEntry *route)
 
 	cmm_addattr_l(nlh, sizeof(buf), RTA_DST, flow->dAddr, ipAddrLen);
 
-	if (flow->sAddr)
+	/* route failing with source address */
+	if (0/*flow->sAddr*/)
 	{
 		cmm_addattr_l(nlh, sizeof(buf), RTA_SRC, flow->sAddr, ipAddrLen);
 		rtm->rtm_src_len = ipAddrLen * 8;
@@ -130,7 +131,7 @@ static int cmmRouteNetlinkLookup(struct flow *flow, struct RtEntry *route)
 	if (!(flow->flow_flags & FLOWFLAG_SOCKET_ROUTE) && flow->iifindex)
 		cmm_addattr_l(nlh, sizeof(buf), RTA_IIF, &flow->iifindex, sizeof(int));
 
-        if (flow->fwmark)
+	if (flow->fwmark)
 		cmm_addattr_l(nlh, sizeof(buf), RTA_FWMARK, &flow->fwmark, sizeof(unsigned int));
 
 	if (cmm_rtnl_send(&rth, nlh) < 0)
@@ -173,6 +174,7 @@ err1:
 	cmm_rtnl_close(&rth);
 
 err0:
+	cmm_print(DEBUG_INFO, "%s: exit failure\n", __func__);
 	return -1;
 }
 
@@ -525,7 +527,7 @@ err:
 *
 *
 ******************************************************************/
-int cmmFPPRtShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmFPPRtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	struct fpp_rt *route;
 	struct list_head *entry;
@@ -572,7 +574,7 @@ int cmmFPPRtShow(struct cli_def * cli, char *command, char *argv[], int argc)
 *
 *
 ******************************************************************/
-int cmmRtShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmRtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	struct RtEntry *route;
 	struct list_head *entry;
@@ -596,10 +598,10 @@ int cmmRtShow(struct cli_def * cli, char *command, char *argv[], int argc)
 			inet_ntop(AF_INET, &route->dAddr, daddr_buf, sizeof(daddr_buf));
 			inet_ntop(AF_INET, &route->gwAddr, gw_buf, sizeof(gw_buf));
 
-			cli_print(cli, "IIf: %s, Mark: %08x, Src: %s, Dst: %s --> Gateway: %s, OIf: %s, PhysOif: %s, Count: %d",
-								if_indextoname(route->iifindex, iifname), route->fwmark,
-								saddr_buf, daddr_buf, gw_buf, if_indextoname(route->oifindex, oifname),
-								if_indextoname(route->phys_oifindex, phys_oifname), route->count);
+			cli_print(cli, "IIf: %s (%d), Mark: %08x, Src: %s, Dst: %s --> Gateway: %s, OIf: %s(%d), PhysOif: %s(%d), Count: %d",
+								if_indextoname(route->iifindex, iifname), route->iifindex, route->fwmark,
+								saddr_buf, daddr_buf, gw_buf, if_indextoname(route->oifindex, oifname), route->oifindex,
+								if_indextoname(route->phys_oifindex, phys_oifname), route->phys_oifindex, route->count);
 
 			n++;
 		}
@@ -652,7 +654,7 @@ static void __cmmCtTunnelRouteUpdate(cpal_handle_t *cpal_handle, struct ctTable 
 {
 	struct ct_route rt;
 
-	cmm_print(DEBUG_INFO, "%s\n", __func__);
+	cmm_print(DEBUG_INFO, "%s: dir:%d\n", __func__, dir);
 
 	if (dir == ORIGINATOR)
 		rt = ctEntry->orig_tunnel;
@@ -704,8 +706,7 @@ static void __cmmCtRouteUpdate(cpal_handle_t *cpal_handle, struct ctTable *ctEnt
 	struct ct_route rt;
 	struct ct_route tunnel_rt;
 
-	cmm_print(DEBUG_INFO, "%s\n", __func__);
-
+	cmm_print(DEBUG_INFO, "%s: dir:%d\n", __func__, dir);
 	if (dir == ORIGINATOR)
 	{
 		rt = ctEntry->orig;
@@ -1153,6 +1154,7 @@ void __cmmRouteLocalNew(cpal_handle_t *cpal_handle, struct ctTable* localctEntry
 	int i;
 	const unsigned int* daddr = NULL;
 
+	cmm_print(DEBUG_INFO,"%s: enter\n", __func__);
 	if (localctEntry->family == AF_INET)
 	{
 		if (localctEntry->flags & LOCAL_CONN_ORIG)
@@ -1226,6 +1228,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 	int i;
 	struct socket *soc;
 
+	cmm_print(DEBUG_INFO,"%s: enter flushed:%d\n", __func__, flushed);
 	/* Look for connections waiting for a route */
 	for (i = 0; i < CONNTRACK_HASH_TABLE_SIZE; i++)
 	{
@@ -1330,24 +1333,22 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 
 	/* Look for SA's waiting for a route */
 	for (i = 0; i < SA_HASH_TABLE_SIZE; i++)
-        {
-                for (entry = list_first(&sa_table[i]); entry != &sa_table[i]; entry = list_next(entry))
-                {
-                        s = container_of(entry, struct SATable, list_by_h);
-                        if(__cmmRouteIsSA(s->SAInfo.proto_family, dAddr, s, 1, rtm->rtm_dst_len))
-                        {
-                                if (!flushed)
-                                {
-                                        cmmRouteFlushCache(rtm->rtm_family);
-                                        flushed = 1;
-                                }
+	{
+		for (entry = list_first(&sa_table[i]); entry != &sa_table[i]; entry = list_next(entry))
+		{
+		s = container_of(entry, struct SATable, list_by_h);
+			if(__cmmRouteIsSA(s->SAInfo.proto_family, dAddr, s, 1, rtm->rtm_dst_len))
+			{
+			if (!flushed) {
+				cmmRouteFlushCache(rtm->rtm_family);
+				flushed = 1;
+			}
 
-                                __pthread_mutex_lock(&sa_lock);
-                                __cmmSATunnelRegister(cpal_handle, s);
-                                __pthread_mutex_unlock(&sa_lock);
-
-                        }
-                }
+			__pthread_mutex_lock(&sa_lock);
+			__cmmSATunnelRegister(cpal_handle, s);
+			__pthread_mutex_unlock(&sa_lock);
+			}
+		}
         }
 
 	for (i = 0; i < HASH_SOCKET_SIZE; i++)

@@ -30,7 +30,4 @@ int PktCapFilterProcess(daemon_handle_t daemon_handle, int argc, char *argv[]);
 
 int PktCapQueryProcess(struct cli_def *cli, daemon_handle_t daemon_handle);
 
-#ifdef CPAL_BPF
-int Check_BPFfilter(struct bpf_insn *filter, int flen);
-#endif
 #endif

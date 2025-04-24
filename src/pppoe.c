@@ -53,6 +53,8 @@ int __cmmGetPPPoESession(FILE *fp, struct interface* ppp_itf)
 
 	while (fgets(buf, sizeof(buf), fp))
 	{
+		if (buf[0] == '\0')
+			continue;
 		// Id   Address           Device     PPPDevice  Unit
 		if (sscanf(buf, "%04X%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%16s%16s%d", &session_id, &macaddr[0], &macaddr[1], &macaddr[2], &macaddr[3], &macaddr[4], &macaddr[5], phys_ifname, ifname, &unit) == 10)
 		{
@@ -94,6 +96,9 @@ int __cmmGetPPPoESession(FILE *fp, struct interface* ppp_itf)
 			cmm_print(DEBUG_INFO, "%s::%d: %s is pppoe\n", __func__, __LINE__, if_indextoname(itf->ifindex, ifname));
 		}
 	}
+
+	if (ferror(fp))
+		return -1;
 
 #if PPPOE_AUTO_ENABLE
         if ( !(ppp_itf->itf_flags & ITF_PPPOE_AUTO_MODE))
@@ -246,7 +251,7 @@ err:
 *
 *
 ******************************************************************/
-int cmmPPPoELocalShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmPPPoELocalShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	struct list_head *entry;
 	struct interface *itf;

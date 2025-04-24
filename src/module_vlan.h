@@ -17,7 +17,7 @@
 	void __cmmGetVlan(int fd, struct interface *itf);
 	int cmmFeVLANUpdate(cpal_handle_t *cpal_handle, int request, struct interface *itf);
 	void cmmVlanReset(cpal_handle_t *cpal_handle);
-	int cmmVlanLocalShow(struct cli_def *cli, char *command, char *argv[], int argc);
+	int cmmVlanLocalShow(struct cli_def *cli, const char *command, char *argv[], int argc);
 	int cmmVlanCheckPolicy(struct interface *itf);
 
 /* remote command processing */

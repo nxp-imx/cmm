@@ -222,27 +222,27 @@ cpal_handle_t *cpal_ff_open(void)
 	}
 
 	bpf_handle->route_fd = bpf_obj_get(PINNED_ROUTE);
-	if (bpf_handle->route_fd == -1) {
+	if (bpf_handle->route_fd < 0) {
 		cmm_print(DEBUG_ERROR, "bpf_obj_get(%s): %s(%d)\n",
 			PINNED_ROUTE, strerror(errno), errno);
 		goto err;
 	}
 	bpf_handle->ipv4_fd = bpf_obj_get(PINNED_IPV4);
-	if (bpf_handle->ipv4_fd == -1) {
+	if (bpf_handle->ipv4_fd < 0) {
 		cmm_print(DEBUG_ERROR, "bpf_obj_get(%s): %s(%d)\n",
 			PINNED_IPV4, strerror(errno), errno);
 		goto err;
 	}
 
 	bpf_handle->ipv6_fd = bpf_obj_get(PINNED_IPV6);
-	if (bpf_handle->ipv6_fd == -1) {
+	if (bpf_handle->ipv6_fd < 0) {
 		cmm_print(DEBUG_ERROR, "bpf_obj_get(%s): %s(%d)\n",
 			PINNED_IPV6, strerror(errno), errno);
 		goto err;
 	}
 
 	bpf_handle->globals_fd = bpf_obj_get(PINNED_GLOBALS);
-	if (bpf_handle->globals_fd == -1) {
+	if (bpf_handle->globals_fd < 0) {
 		cmm_print(DEBUG_ERROR, "bpf_obj_get(%s): %s(%d)\n",
 			PINNED_GLOBALS, strerror(errno), errno);
 		goto err;

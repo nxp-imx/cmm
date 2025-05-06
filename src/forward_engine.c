@@ -338,6 +338,7 @@ int cmmFeCtUpdate4(cpal_handle_t *cpal_handler, int action, struct ctTable *ctEn
 	if (!(ctEntry->fpp_dir & REPLIER))
 		cmd.flags |= CTCMD_FLAGS_REP_DISABLED;
 
+	printf("$$$$$$$$$$$Route update FLags %x\n", cmd.flags);
 	cmm_print(DEBUG_INFO, "%s: protocol=%d, qosconnmark=0x%" PRIx64 "\n", __func__, cmd.protocol, cmd.qosconnmark);
 	cmm_print(DEBUG_INFO, "  Saddr=%s, Daddr=%s, Sport=%d, Dport=%d\n",
 		  inet_ntop(AF_INET, &cmd.saddr, saddr_buf, sizeof(saddr_buf)),

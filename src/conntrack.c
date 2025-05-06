@@ -1481,6 +1481,23 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 	{
 		/* Check if originator packet passed through PRE_ROUTING hook */
 		iif = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_IIF);
+//		printf(" in route originator = %p\n", ctEntry->orig.route);
+#if 0
+		printf("$$$$$$$$$$$$$$$Route oifindex= %d and iindex %d underlying = %d and mtu %d\n ", ctEntry->orig.route->oifindex, ctEntry->orig.route->iifindex, ctEntry->orig.route->underlying_iifindex, ctEntry->orig.route->mtu);
+#else
+		if (!iif) {
+			if (ctEntry->orig.route->oifindex == 3) {
+				iif = 2;
+				ctEntry->orig.route->underlying_iifindex = 2;
+				ctEntry->orig.route->iifindex = 2;
+			}
+			if (ctEntry->orig.route->oifindex == 2) {
+				iif = 3;
+				ctEntry->orig.route->underlying_iifindex = 3;
+				ctEntry->orig.route->iifindex = 3;
+			}
+		}
+#endif
 		if (!iif)
 		{
 			ctEntry->flags |= LOCAL_CONN_ORIG;
@@ -1591,6 +1608,8 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 #endif
 		flow.fwmark = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_MARK);
 		flow.flow_flags = 0;
+		flow.iifindex = iif;
+		flow.underlying_iif = iif;
 
 #ifdef IPSEC_FLOW_CACHE
 		if (ctEntry->fEntryOrigOut && ctEntry->fEntryOrigOut->ignore_neigh)
@@ -1621,6 +1640,21 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 		if (ctEntry->dir_filter & ORIGINATOR) {
 			/*check if inbound interface is LAN and outbound interface WLAN and vice-versa if so forward normally*/
 			itf = __itf_find(iif = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_IIF));
+			if (!itf) {
+				if (ctEntry->orig.route->oifindex == 3) {
+					iif = 2;
+					ctEntry->orig.route->underlying_iifindex = 2;
+					ctEntry->orig.route->iifindex = 2;
+					itf = __itf_find(iif);
+				}
+				if (ctEntry->orig.route->oifindex == 2) {
+					iif = 3;
+					ctEntry->orig.route->underlying_iifindex = 3;
+					ctEntry->orig.route->iifindex = 3;
+					itf = __itf_find(iif);
+				}
+			}
+
 			route = ctEntry->orig.route;
 			out_itf = __itf_find(route->oifindex);
 			if (!(__itf_is_wifi(out_itf) && (!is_wan_port_ifindex(iif))) &&
@@ -1652,9 +1686,28 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 replier:
 	if (dir & REPLIER)
 	{
+	//	printf("replier $$$$$$$$$$$$$$$Route oifindex= %d and iindex %d underlying = %d and mtu %d\n ", ctEntry->rep.route->oifindex, ctEntry->rep.route->iifindex, ctEntry->rep.route->underlying_iifindex, ctEntry->rep.route->mtu);
+//		printf("in replier..........%p\n", ctEntry->rep.route);
 		SAEntry = NULL;
+#if 0
 		/* Check if replier packet passed through PRE_ROUTING hook */
 		rep_iif = nfct_get_attr_u32(ct, ATTR_REPL_COMCERTO_FP_IIF);
+#if 0
+		if (!rep_iif) {
+			if (ctEntry->rep.route->oifindex == 3) {
+				rep_iif = 2;
+				flow.iifindex = 2;
+				ctEntry->rep.route->underlying_iifindex = 2;
+				ctEntry->rep.route->iifindex = 2;
+			}
+			if (ctEntry->rep.route->oifindex == 2) {
+				rep_iif = 3;
+				flow.iifindex = 3;
+				ctEntry->rep.route->underlying_iifindex = 3;
+				ctEntry->rep.route->iifindex = 3;
+			}
+		}
+#endif
 		if (!rep_iif)
 		{
 			ctEntry->flags |= LOCAL_CONN_REPL;
@@ -1672,7 +1725,7 @@ replier:
 			cmm_print(DEBUG_INFO,"%s: error repl iif not programmed\n", __func__);
 			goto program;
 		}
-
+#endif
 #ifdef IPSEC_FLOW_CACHE
 		// Is this CT secure ?
 		/* If a packet is DNATed, then only IPSec policies which are based on the DNATed IP addresses are applied
@@ -1710,6 +1763,7 @@ replier:
 		flow.family = ctEntry->family;
 		flow.sAddr = sAddrRepl;
 		flow.dAddr = sAddrOrig;
+#if 1
 		flow.iifindex = nfct_get_attr_u32(ct, ATTR_REPL_COMCERTO_FP_IFINDEX);
 #ifdef VLAN_FILTER
 		flow.underlying_vlan_id = nfct_get_attr_u16(ct, ATTR_REPL_COMCERTO_FP_UNDERLYING_VID);
@@ -1719,6 +1773,9 @@ replier:
 #else
 		flow.underlying_iif = 0;
 #endif
+#endif
+		flow.underlying_iif = 3;
+		flow.iifindex = 3;
 		flow.fwmark = nfct_get_attr_u32(ct, ATTR_REPL_COMCERTO_FP_MARK);
 		flow.flow_flags = 0;
 
@@ -1741,8 +1798,10 @@ replier:
 		}
 #endif /* IPSEC_FLOW_CACHE */
 
+		printf("Registering route for replier.......\n");
 		if (__cmmRouteRegister(&ctEntry->rep, &flow, "replier") < 0)
 		{
+			printf("Failed reply route register\n");
 			dir &= ~REPLIER;
 			goto program;
 		}
@@ -2545,7 +2604,7 @@ static int __cmmCtCatch(struct cmm_ct *ctx, enum nf_conntrack_msg_type type, str
 			cmm_print(DEBUG_INFO, "%s: proto %d connection %s(%#x) %s(%#x)\n", __func__,
 					l4proto, conntrack_event_type(type), type,
 					conntrack_status(status), status);
-
+#if 0
 			if (ctEntry) {
 				ctTemp = cmmCtClone(ct);
 				__cmmCtUpdate(ct, ctx->handle, ctEntry);
@@ -2553,7 +2612,7 @@ static int __cmmCtCatch(struct cmm_ct *ctx, enum nf_conntrack_msg_type type, str
 				cmmCtSetPermanent(ctx->handle, ctEntry->flags , ctTemp, ctEntry->ct, 0);
 				rc = NFCT_CB_STOLEN;
 			}
-
+#endif
 
 			if (l4proto == IPPROTO_UDP) {
 				if (status & IPS_ASSURED) {

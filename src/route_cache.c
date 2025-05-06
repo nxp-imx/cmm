@@ -128,8 +128,8 @@ static int cmmRouteNetlinkLookup(struct flow *flow, struct RtEntry *route)
 	else
 		rtm->rtm_src_len = 0;
 
-	if (!(flow->flow_flags & FLOWFLAG_SOCKET_ROUTE) && flow->iifindex)
-		cmm_addattr_l(nlh, sizeof(buf), RTA_IIF, &flow->iifindex, sizeof(int));
+//	if (!(flow->flow_flags & FLOWFLAG_SOCKET_ROUTE) && flow->iifindex)
+//		cmm_addattr_l(nlh, sizeof(buf), RTA_IIF, &flow->iifindex, sizeof(int));
 
 	if (flow->fwmark)
 		cmm_addattr_l(nlh, sizeof(buf), RTA_FWMARK, &flow->fwmark, sizeof(unsigned int));
@@ -137,6 +137,7 @@ static int cmmRouteNetlinkLookup(struct flow *flow, struct RtEntry *route)
 	if (cmm_rtnl_send(&rth, nlh) < 0)
 		goto err1;
 
+	printf("In route look up........\n");
 	if (cmm_rtnl_listen(&rth, cmmRouteNetlinkLookupFilter, route) < 0)
 		goto err1;
 
@@ -316,6 +317,7 @@ struct RtEntry *__cmmRouteAdd(struct flow *flow)
 
 	route->count = 0;
 
+	printf("in cmm route add...\n");
 	/* Get Route information from kernel */
 	if (cmmRouteNetlinkLookup(flow, route) < 0)
 	{
@@ -688,6 +690,7 @@ static void __cmmCtTunnelRouteUpdate(cpal_handle_t *cpal_handle, struct ctTable 
 			ctEntry->rep_tunnel.fpp_route = NULL;
 	}
 
+					printf("line = %d\n", __LINE__);
 	____cmmCtRegister(cpal_handle, ctEntry);
 
 	if (dir == ORIGINATOR)
@@ -706,6 +709,7 @@ static void __cmmCtRouteUpdate(cpal_handle_t *cpal_handle, struct ctTable *ctEnt
 	struct ct_route rt;
 	struct ct_route tunnel_rt;
 
+	printf("__cmmCtRouteUpdate .......\n");
 	cmm_print(DEBUG_INFO, "%s: dir:%d\n", __func__, dir);
 	if (dir == ORIGINATOR)
 	{
@@ -1154,6 +1158,7 @@ void __cmmRouteLocalNew(cpal_handle_t *cpal_handle, struct ctTable* localctEntry
 	int i;
 	const unsigned int* daddr = NULL;
 
+	printf("In LOcal route new.....!!!!!!!!!!!!!!!!\n");
 	cmm_print(DEBUG_INFO,"%s: enter\n", __func__);
 	if (localctEntry->family == AF_INET)
 	{
@@ -1185,6 +1190,7 @@ void __cmmRouteLocalNew(cpal_handle_t *cpal_handle, struct ctTable* localctEntry
 			{
 				if (__cmmRouteIsTnlConn(localctEntry->family, daddr, ORIGINATOR, ctEntry, 0, 0))
 				{
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}
@@ -1194,6 +1200,7 @@ void __cmmRouteLocalNew(cpal_handle_t *cpal_handle, struct ctTable* localctEntry
 			{
 				if (__cmmRouteIsTnlConn(localctEntry->family, daddr, REPLIER, ctEntry, 0, 0))
 				{
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}
@@ -1228,6 +1235,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 	int i;
 	struct socket *soc;
 
+	printf("In route new.....!!!!!!!!!!!!!!!! %x\n", ctEntry->dir);
 	cmm_print(DEBUG_INFO,"%s: enter flushed:%d\n", __func__, flushed);
 	/* Look for connections waiting for a route */
 	for (i = 0; i < CONNTRACK_HASH_TABLE_SIZE; i++)
@@ -1241,6 +1249,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 
 			if ((ctEntry->dir & ORIGINATOR) && (!ctEntry->orig.route))
 			{
+				printf("In LOcal route new.....originator!!!!!!!!!!!!!!!!\n");
 				if (ctEntry->family == AF_INET)
 					ct_daddr = nfct_get_attr(ctEntry->ct, ATTR_REPL_IPV4_SRC);
 				else
@@ -1254,12 +1263,14 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 						flushed = 1;
 					}
 
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}
 
 			if ((ctEntry->dir & REPLIER) && (!ctEntry->rep.route))
 			{
+				printf("In LOcal route new....replier.!!!!!!!!!!!!!!!!\n");
 				if (ctEntry->family == AF_INET)
 					ct_daddr = nfct_get_attr(ctEntry->ct, ATTR_ORIG_IPV4_SRC);
 				else
@@ -1273,6 +1284,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 						flushed = 1;
 					}
 
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}
@@ -1290,6 +1302,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 						flushed = 1;
 					}
 
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}
@@ -1306,6 +1319,7 @@ static void __cmmRouteNew(cpal_handle_t *cpal_handle, struct rtmsg *rtm, unsigne
 						flushed = 1;
 					}
 
+					printf("line = %d\n", __LINE__);
 					____cmmCtRegister(cpal_handle, ctEntry);
 				}
 			}

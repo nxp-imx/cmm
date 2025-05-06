@@ -208,7 +208,7 @@ int cmmCtNetlinkRemove(struct nfct_handle * handler, struct nf_conntrack *ct)
 *
 *
 ******************************************************************/
-int cmmCtShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmCtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	struct ctTable * temp;
 	struct list_head *entry;
@@ -1021,7 +1021,6 @@ static int __cmmFPPRouteRegister(struct ct_route *rt, const char *dir)
 #endif
 		iifindex = rt->route->iifindex;
 		
-
 	if (rt->route->flow_flags & FLOWFLAG_FLOATING_TUNNEL)
  		rt->fpp_route = __cmmFPPRouteGet(rt->route->phys_oifindex, iifindex, 
 						rt->route->underlying_iifindex, 
@@ -1446,9 +1445,12 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 	void *tmp;
 	int key;
 	int rc;
- 	int iif, rep_iif, iif_programmed;
+	int lif, rep_lif;
+#if 0
+ 	int iif_programmed, iif, rep_iif;
 	struct interface *itf,*out_itf;
 	struct RtEntry *route;
+#endif
 	struct SATable *SAEntry = NULL;
 
 #ifdef IPSEC_FLOW_CACHE
@@ -1479,34 +1481,17 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 
 	if (dir & ORIGINATOR)
 	{
-		/* Check if originator packet passed through PRE_ROUTING hook */
-		iif = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_IIF);
-//		printf(" in route originator = %p\n", ctEntry->orig.route);
-#if 0
-		printf("$$$$$$$$$$$$$$$Route oifindex= %d and iindex %d underlying = %d and mtu %d\n ", ctEntry->orig.route->oifindex, ctEntry->orig.route->iifindex, ctEntry->orig.route->underlying_iifindex, ctEntry->orig.route->mtu);
-#else
-		if (!iif) {
-			if (ctEntry->orig.route->oifindex == 3) {
-				iif = 2;
-				ctEntry->orig.route->underlying_iifindex = 2;
-				ctEntry->orig.route->iifindex = 2;
-			}
-			if (ctEntry->orig.route->oifindex == 2) {
-				iif = 3;
-				ctEntry->orig.route->underlying_iifindex = 3;
-				ctEntry->orig.route->iifindex = 3;
-			}
-		}
-#endif
-		if (!iif)
-		{
+		lif = __ifidx_find(ctEntry->family, sAddrOrig, dAddrOrig);
+		if (lif) {
+			cmm_print(DEBUG_INFO, "Local connection\n");
 			ctEntry->flags |= LOCAL_CONN_ORIG;
-			cmm_print(DEBUG_ERROR,"%s: error iif null or local\n", __func__);
+			cmm_print(DEBUG_ERROR,"%s: local connection\n", __func__);
 			rc = ____cmmCtLocalRegister(cpal_handle,ctEntry);
 			goto end;
+		} else {
+			cmm_print(DEBUG_INFO, "Non local connection\n");
 		}
-
-
+#if 0
  		cmm_print(DEBUG_INFO,"orig iif is %x\n", iif);
 
 		/* Check if conntrack is between two fpp interfaces */
@@ -1517,7 +1502,7 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 			cmm_print(DEBUG_INFO,"%s: error iif not programmed\n", __func__);
 			goto replier;
 		}
-		
+#endif		
 		cmm_print(DEBUG_INFO,"%s: Building route flow\n", __func__);
 		// Is this CT secure ?
 #ifndef IPSEC_FLOW_CACHE
@@ -1608,8 +1593,6 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 #endif
 		flow.fwmark = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_MARK);
 		flow.flow_flags = 0;
-		flow.iifindex = iif;
-		flow.underlying_iif = iif;
 
 #ifdef IPSEC_FLOW_CACHE
 		if (ctEntry->fEntryOrigOut && ctEntry->fEntryOrigOut->ignore_neigh)
@@ -1637,24 +1620,9 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 			goto replier;
 		}
 
+#if 0
 		if (ctEntry->dir_filter & ORIGINATOR) {
 			/*check if inbound interface is LAN and outbound interface WLAN and vice-versa if so forward normally*/
-			itf = __itf_find(iif = nfct_get_attr_u32(ct, ATTR_ORIG_COMCERTO_FP_IIF));
-			if (!itf) {
-				if (ctEntry->orig.route->oifindex == 3) {
-					iif = 2;
-					ctEntry->orig.route->underlying_iifindex = 2;
-					ctEntry->orig.route->iifindex = 2;
-					itf = __itf_find(iif);
-				}
-				if (ctEntry->orig.route->oifindex == 2) {
-					iif = 3;
-					ctEntry->orig.route->underlying_iifindex = 3;
-					ctEntry->orig.route->iifindex = 3;
-					itf = __itf_find(iif);
-				}
-			}
-
 			route = ctEntry->orig.route;
 			out_itf = __itf_find(route->oifindex);
 			if (!(__itf_is_wifi(out_itf) && (!is_wan_port_ifindex(iif))) &&
@@ -1664,6 +1632,7 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 				goto replier;
 			}
 		}
+#endif
 		tmp = ctEntry->orig_tunnel.route;
 
 		rc = __cmmCtTunnelRouteRegister(&ctEntry->orig, &ctEntry->orig_tunnel,dAddrOrig[0], dPortOrig,
@@ -1686,37 +1655,18 @@ int ____cmmCtRegister(cpal_handle_t *cpal_handle, struct ctTable *ctEntry)
 replier:
 	if (dir & REPLIER)
 	{
-	//	printf("replier $$$$$$$$$$$$$$$Route oifindex= %d and iindex %d underlying = %d and mtu %d\n ", ctEntry->rep.route->oifindex, ctEntry->rep.route->iifindex, ctEntry->rep.route->underlying_iifindex, ctEntry->rep.route->mtu);
-//		printf("in replier..........%p\n", ctEntry->rep.route);
 		SAEntry = NULL;
-#if 0
-		/* Check if replier packet passed through PRE_ROUTING hook */
-		rep_iif = nfct_get_attr_u32(ct, ATTR_REPL_COMCERTO_FP_IIF);
-#if 0
-		if (!rep_iif) {
-			if (ctEntry->rep.route->oifindex == 3) {
-				rep_iif = 2;
-				flow.iifindex = 2;
-				ctEntry->rep.route->underlying_iifindex = 2;
-				ctEntry->rep.route->iifindex = 2;
-			}
-			if (ctEntry->rep.route->oifindex == 2) {
-				rep_iif = 3;
-				flow.iifindex = 3;
-				ctEntry->rep.route->underlying_iifindex = 3;
-				ctEntry->rep.route->iifindex = 3;
-			}
-		}
-#endif
-		if (!rep_iif)
-		{
+		rep_lif = __ifidx_find(ctEntry->family, sAddrRepl, dAddrRepl);
+		if (rep_lif) {
+			cmm_print(DEBUG_INFO, "Local connection\n");
 			ctEntry->flags |= LOCAL_CONN_REPL;
-			cmm_print(DEBUG_ERROR,"%s: error rep_iif null or local\n", __func__);
+			cmm_print(DEBUG_ERROR,"%s: local reply connection\n", __func__);
 			rc = ____cmmCtLocalRegister(cpal_handle,ctEntry);
 			goto end;
+		} else {
+			cmm_print(DEBUG_INFO, "Non local connection\n");
 		}
-
-
+#if 0
  		cmm_print(DEBUG_INFO,"repl iif is %x\n", rep_iif);
 		/* Check if conntrack is between two fpp interfaces */
 		if (!__itf_is_programmed(rep_iif))
@@ -1774,8 +1724,6 @@ replier:
 		flow.underlying_iif = 0;
 #endif
 #endif
-		flow.underlying_iif = 3;
-		flow.iifindex = 3;
 		flow.fwmark = nfct_get_attr_u32(ct, ATTR_REPL_COMCERTO_FP_MARK);
 		flow.flow_flags = 0;
 
@@ -1798,10 +1746,9 @@ replier:
 		}
 #endif /* IPSEC_FLOW_CACHE */
 
-		printf("Registering route for replier.......\n");
 		if (__cmmRouteRegister(&ctEntry->rep, &flow, "replier") < 0)
 		{
-			printf("Failed reply route register\n");
+			cmm_print(DEBUG_ERROR, "Failed to register reply route\n");
 			dir &= ~REPLIER;
 			goto program;
 		}
@@ -2126,6 +2073,7 @@ fail0:
 	return NFCT_CB_CONTINUE;
 }
 
+#if 0
 /*****************************************************************
 * __cmmCtUpdate
 *
@@ -2138,6 +2086,7 @@ static void __cmmCtUpdate(struct nf_conntrack *ct, struct nfct_handle *handle, s
 	nfct_destroy(ctEntry->ct);
 	ctEntry->ct = ct;
 }
+#endif
 
 /*****************************************************************
 * __cmmFPPRouteDeregister
@@ -2663,12 +2612,14 @@ static int __cmmCtCatch(struct cmm_ct *ctx, enum nf_conntrack_msg_type type, str
 
 			ctEntry = __cmmCtFind(ct);
 
+#if 0
 			if (ctEntry) {
 				ctTemp = cmmCtClone(ct);
 				__cmmCtUpdate(ct, ctx->handle, ctEntry);
 				cmmCtSetPermanent(ctx->handle, ctEntry->flags , ctTemp, ctEntry->ct, 0);
 				rc = NFCT_CB_STOLEN;
 			}
+#endif
 
 			if (nfct_attr_is_set(ct, ATTR_TCP_STATE))
 			{
@@ -2697,6 +2648,8 @@ static int __cmmCtCatch(struct cmm_ct *ctx, enum nf_conntrack_msg_type type, str
 				cmm_print(DEBUG_INFO, "%s: TCP connection %s(%#x) %s(%#x) missing state attribute\n", __func__,
 							conntrack_event_type(type), type,
 							conntrack_status(status), status);
+				if ((status & IPS_ASSURED))
+					rc = __cmmCtRegister(ctx->cpal_handle, ctx->handle, ct, ctEntry, ORIGINATOR | REPLIER);
 				goto exit;
 			}
 
@@ -3061,8 +3014,9 @@ static void *cmmCtThread(void *data)
 #if PPPOE_AUTO_ENABLE
 			cmmPPPoEAutoKeepAlive();
 #endif
-
+#if !defined(IPSEC_SUPPORT_DISABLED)
 			cmmDPDIPsecSAUpdate(ctx);
+#endif
 
 			/* Resync if needed and system is idle */
 			if (need_resync && !count)
@@ -3252,7 +3206,6 @@ int cmmCtInit(struct cmm_ct *ctx)
 {
 	int fd;
 	int i;
-	int size;
 
 	cmm_print(DEBUG_INFO, "%s\n", __func__);
 

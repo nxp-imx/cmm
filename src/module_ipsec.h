@@ -198,7 +198,7 @@ typedef struct _tCommandIPSecSetLifetime{
 
 int __cmmSATunnelRegister(cpal_handle_t *cpal_handle, struct SATable* SAEntry);
 void __cmmSAUpdateWithRoute(cpal_handle_t *cpal_handle, struct RtEntry *route);
-int cmmSAShow(struct cli_def * cli, char *command, char *argv[], int argc);
+int cmmSAShow(struct cli_def * cli, const char *command, char *argv[], int argc);
 int cmmSACreate(cpal_handle_t *cpal_handle, unsigned short fcode, unsigned short len, unsigned short *payload);
 int cmmSADelete(cpal_handle_t *cpal_handle, PCommandIPSecDeleteSA pSA_cmd);
 int cmmSAFlush(cpal_handle_t *cpal_handle, unsigned short fcode, unsigned short len, unsigned short *payload);

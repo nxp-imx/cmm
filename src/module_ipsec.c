@@ -1,11 +1,7 @@
-/*
+/* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0+)
  *
- *  Copyright (C) 2015 Freescale Semiconductor, Inc.
  *  Copyright 2014-2016 Freescale Semiconductor, Inc.
  *  Copyright 2017,2021,2025 NXP
- *
- * SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0+)
- *
  *
  */
 
@@ -40,7 +36,7 @@ static inline unsigned short  getSAHash(unsigned short id)
 }
 
 
-int cmmSAShow(struct cli_def * cli, char *command, char *argv[], int argc)
+int cmmSAShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
 	int i, count = 0;
 	struct SATable *pSAEntry;
@@ -263,9 +259,6 @@ out:
 
 static int __cmmSARemove(cpal_handle_t *cpal_handle, struct SATable *SAEntry)
 {
-	unsigned short hash;
-	hash = getSAHash(SAEntry->SAInfo.sagd);
-
 	__cmmRouteDeregister(cpal_handle, &SAEntry->tnl_rt, "sa");
 
         /* Remove it from the hash table */

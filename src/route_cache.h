@@ -136,7 +136,7 @@
 	struct ctTable;
 	void __cmmRouteLocalNew(cpal_handle_t *cpal_handle, struct ctTable* localctEntry);
 
-#define cmmRouteEqual(route, flow, len) (!memcmp((route)->sAddr, (flow)->sAddr, (len)) && !memcmp((route)->dAddr, (flow)->dAddr, (len)) && ((route)->fwmark == (flow)->fwmark) && ((route)->iifindex == (flow)->iifindex))
+#define cmmRouteEqual(route, flow, len) (!memcmp((route)->sAddr, (flow)->sAddr, (len)) && !memcmp((route)->dAddr, (flow)->dAddr, (len)) && ((route)->fwmark == (flow)->fwmark))// && ((route)->iifindex == (flow)->iifindex))
 
 static inline int cmmPrefixEqual(const u_int32_t *daddr1, const u_int32_t *daddr2, int lenbits)
 {

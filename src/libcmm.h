@@ -37,7 +37,7 @@ typedef struct cmm_response
 		u_int16_t	rc;			/* return code, set by remote side */
 		u_int8_t	buf[CMM_BUF_SIZE];	/* response payload, set by remote side */
 	};
-} __attribute__((__packed__)) cmm_response_t;	/* "packed" is due to operations
+} cmm_response_t;	/* "packed" is due to operations
 						 * on the structure using memcpy() internally in CMM daemon
 						 */
 

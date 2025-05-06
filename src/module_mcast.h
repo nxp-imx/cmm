@@ -48,7 +48,7 @@ typedef struct mcast_entry {
 	char	        input_device_str[IFNAMSIZ];
 #endif
 	struct mc_listener listener[MC_MAX_LISTENERS_PER_GROUP];
-}__attribute__((__packed__)) mcast_entry_t;
+} mcast_entry_t;
 
 extern struct list_head mc_table[MC_NUM_HASH_ENTRIES];
 struct mcast_entry *mc_find ( void  *data, unsigned char family );

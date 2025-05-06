@@ -77,6 +77,64 @@ extern int tunnel_send_cmd(cpal_handle_t *cpal_handle, int request, struct inter
 
 int LO_IFINDEX;
 
+/*****************************************************************
+* cmmInfShow
+*
+*
+******************************************************************/
+int cmmInfShow(struct cli_def * cli, const char *command, char *argv[], int argc)
+{
+	struct interface *itf;
+	struct list_head *entry, *addr_entry;
+	struct interface_addr *addr;
+	int i;
+
+	cli_print(cli, "Interfaces:");
+
+	for (i = 0; i < ITF_HASH_TABLE_SIZE; i++)
+	{
+		entry = list_first(&itf_table.hash[i]);
+		if (entry->next != entry) {
+			cli_print(cli, "=========================:");
+			for (; entry != &itf_table.hash[i]; entry = list_next(entry))
+			{
+				itf = container_of(entry, struct interface, list);
+				cli_print(cli, "\tName : %s", itf->ifname);
+				cli_print(cli, "\tIndex: %d", itf->ifindex);
+				cli_print(cli, "\tMTU: %u", itf->mtu);
+				cli_print(cli, "\tMAC: %0X:%0X:%0X:%0X:%0X:%0X", itf->macaddr[0],
+						itf->macaddr[1], itf->macaddr[2], itf->macaddr[3],
+						itf->macaddr[4], itf->macaddr[5]);
+				cli_print(cli, "\tType: %u", itf->type);
+				if (__itf_is_up(itf)) {
+					cli_print(cli, "\tLink: True");
+				} else {
+					cli_print(cli, "\tLink: False");
+				}
+				addr_entry = list_first(&itf->addr_list);
+				if (addr_entry->next != addr_entry) {
+					cli_print(cli, "\tIP addresses:");
+					char addr_str[INET6_ADDRSTRLEN];
+
+					for (; addr_entry != &itf->addr_list; addr_entry = list_next(addr_entry))
+					{
+						addr = container_of(addr_entry, struct interface_addr, list);
+						if (addr->family == AF_INET) {
+							inet_ntop(AF_INET, addr->address, addr_str, INET6_ADDRSTRLEN);
+							cli_print(cli, "\t\tIPV4: %s/%d\n", addr_str, addr->prefixlen);
+						} else if (addr->family == AF_INET6) {
+							inet_ntop(AF_INET6, addr->address, addr_str, INET6_ADDRSTRLEN);
+							cli_print(cli, "\t\tIPV6: %s/%d\n", addr_str, addr->prefixlen);
+						}
+					}
+				}
+			}
+		}
+	}
+
+        return CLI_OK;
+}
+
 static void __addr_remove(struct interface_addr *addr)
 {
 	cmm_print(DEBUG_INFO, "%s: address removed\n", __func__);
@@ -114,6 +172,7 @@ static void __addr_update(struct interface_addr *addr, struct ifaddrmsg *ifa, st
 
 	addr->len = RTA_PAYLOAD(attr);
 	memcpy(addr->address, RTA_DATA(attr), addr->len);
+	cmm_print(DEBUG_INFO,"%s: Address:%d.%d.%d.%d, %p, rat_data:%s, len:%d %d", __func__, addr->address[0], addr->address[1], addr->address[2], addr->address[3], addr->address, RTA_DATA(attr), addr->len, __LINE__);
 
 	addr->prefixlen = ifa->ifa_prefixlen;
 	addr->scope = ifa->ifa_scope;
@@ -735,8 +794,10 @@ static void __itf_update(struct interface_table *ctx, struct interface *itf, str
 #endif
 	}
 
+#ifdef WIFI_ENABLE
 proceed_to_lro:
 	lro_interface_update(itf);
+#endif
 
 out:
 	cmm_print(DEBUG_INFO, "%s: itf: %lx, ifindex: %d, phys_ifindex: %d, flags: %x\n", __func__, (unsigned long)itf, itf->ifindex, itf->phys_ifindex, itf->itf_flags);
@@ -1007,6 +1068,55 @@ static void updatelink(struct interface_table *ctx, struct ifinfomsg *ifi, struc
 	__pthread_mutex_unlock(&rtMutex);
 	__pthread_mutex_unlock(&ctMutex);
 	__pthread_mutex_unlock(&ctx->lock);
+}
+
+int __ifidx_find(int family, const unsigned int *sAddr, const unsigned int *dAddr)
+{
+	struct list_head *entry, *addr_entry;
+	struct interface *itf;
+	struct interface_addr *addr;
+	int i=0, addr_len = 0;
+	char sbuf[INET6_ADDRSTRLEN], tbuf[INET6_ADDRSTRLEN];
+
+	cmm_print(DEBUG_INFO, "%s: find interface with saddr(%s) daddr = (%s)\n", __func__,
+			inet_ntop(family, sAddr, sbuf, sizeof(sbuf)),
+			inet_ntop(family, dAddr, tbuf, sizeof(tbuf)));
+
+	if (family == AF_INET)
+		addr_len = 4;
+	else
+		addr_len = 16;
+
+	for (i = 0; i < ITF_HASH_TABLE_SIZE; i++) {
+		entry = list_first(&itf_table.hash[i]);
+		if (entry->next != entry) {
+
+			for (; entry != &itf_table.hash[i]; entry = list_next(entry))
+			{
+				itf = container_of(entry, struct interface, list);
+				addr_entry = list_first(&itf->addr_list);
+				if (addr_entry->next != addr_entry) {
+					for (; addr_entry != &itf->addr_list; addr_entry = list_next(addr_entry))
+					{
+						addr = container_of(addr_entry, struct interface_addr, list);
+						if (addr->family != family)
+							continue;
+						if (memcmp(addr->address, sAddr, addr_len) == 0) {
+							cmm_print(DEBUG_INFO, "sAddr Match\n");
+							return itf->ifindex;
+						}
+						if (memcmp(addr->address, dAddr, addr_len) == 0) {
+							cmm_print(DEBUG_INFO, "dAddr Match\n");
+							return itf->ifindex;
+						}
+					}
+
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
 struct interface *__itf_find(int ifindex)

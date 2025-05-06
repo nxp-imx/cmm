@@ -136,7 +136,7 @@ static inline int get_port_ifindex(char *name)
 
 static inline char *get_port_name(int port_id, char *buf, int buf_size)
 {
-	int ii;
+	int ii, ret;
 
 	buf[0] = '\0';
 
@@ -145,8 +145,11 @@ static inline char *get_port_name(int port_id, char *buf, int buf_size)
 		if (!port_table[ii].enable)
 			continue;
 
-		if (port_table[ii].port_id == port_id)
-			snprintf(buf, buf_size, "%s",  port_table[ii].ifname);
+		if (port_table[ii].port_id == port_id) {
+			ret = snprintf(buf, buf_size, "%s",  port_table[ii].ifname);
+			if (ret < 0)
+				return NULL;
+		}
 	}
 
 	return buf;
@@ -323,6 +326,8 @@ struct gemac_port ;
 
 struct interface *__itf_get(int ifindex);
 void __itf_put(struct interface *itf);
+
+int __ifidx_find(int family, const unsigned int *sAddr, const unsigned int *dAddr);
 struct interface *__itf_find(int ifindex);
 
 int itf_table_init(struct interface_table *ctx);
@@ -352,6 +357,7 @@ int ____itf_is_floating_sit_tunnel(struct interface *itf);
 int __itf_is_floating_sit_tunnel(int ifindex);
 int itf_name_update(cpal_handle_t *cpal_handle, struct gemac_port *port);
 int itf_match_src_ipaddr(int ifindex, int family, unsigned int *ipaddr);
+int cmmInfShow(struct cli_def * cli, const char *command, char *argv[], int argc);
 
 int cmmRtnlLink(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg);
 int cmmRtnlIfAddr(const struct sockaddr_nl *who, struct nlmsghdr *nlh, void *arg);

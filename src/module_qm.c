@@ -814,6 +814,7 @@ int qm_get_num(char **keywords, int *pcpt, uint32_t max_val, uint32_t *val, char
 	return QM_SUCCESS;
 }
 
+#ifdef ENABLE_EGRESS_QOS
 static int qm_shaper_cfg(char **keywords, int *pcpt, fpp_qm_shaper_cfg_cmd_t *shaperCmd, daemon_handle_t daemon_handle)
 {
 	union u_rxbuf rxbuf;
@@ -1326,6 +1327,7 @@ static int qm_interface_cfg(char **keywords, int *pcpt, daemon_handle_t daemon_h
 	*pcpt = cpt;
 	return QM_INVALID_KEYWORD;
 }
+#endif
 
 static int qm_exptrate_cfg(char **keywords, int cpt, daemon_handle_t daemon_handle)
 {
@@ -2740,7 +2742,11 @@ void cmmQmResetQ2Prio(fpp_qm_reset_cmd_t *cmdp, int cmdlen)
 		return;
 	}
 
+#ifdef LS1043
+	interface = (u_int16_t)cmdp->interface[0];
+#else
 	interface = cmdp->interface;
+#endif
 
 	snprintf(fname, 128, "/sys/class/net/%s/q2prio", get_port_name(interface, ifname, IFNAMSIZ));
 	fp = fopen(fname, "w");

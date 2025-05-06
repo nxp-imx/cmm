@@ -18,7 +18,7 @@
 	void cmmMc6SetPrintHelp();
 	int cmmMc6SetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handle);
 	int cmmMc6ProcessClientCmd(cpal_handle_t* cpalMsgHandler, int function_code, u_int8_t *cmd_buf, u_int16_t cmd_len, u_int16_t *res_buf, u_int16_t *res_len);
-	int cmmMc6Show(struct cli_def * cli, char *command, char *argv[], int argc);
+	int cmmMc6Show(struct cli_def * cli, const char *command, char *argv[], int argc);
 
 	extern  int parse_macaddr(char *pstring, unsigned char *pmacaddr);
 

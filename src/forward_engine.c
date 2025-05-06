@@ -338,7 +338,6 @@ int cmmFeCtUpdate4(cpal_handle_t *cpal_handler, int action, struct ctTable *ctEn
 	if (!(ctEntry->fpp_dir & REPLIER))
 		cmd.flags |= CTCMD_FLAGS_REP_DISABLED;
 
-	printf("$$$$$$$$$$$Route update FLags %x\n", cmd.flags);
 	cmm_print(DEBUG_INFO, "%s: protocol=%d, qosconnmark=0x%" PRIx64 "\n", __func__, cmd.protocol, cmd.qosconnmark);
 	cmm_print(DEBUG_INFO, "  Saddr=%s, Daddr=%s, Sport=%d, Dport=%d\n",
 		  inet_ntop(AF_INET, &cmd.saddr, saddr_buf, sizeof(saddr_buf)),
@@ -359,9 +358,9 @@ int cmmFeCtUpdate4(cpal_handle_t *cpal_handler, int action, struct ctTable *ctEn
 		 * the queue, DSCP marking parameters, and VLAN p-bit settings with the twin connection.
 		 */
 
+#if !defined(LS1043)
 		qosconnmark_t qmark;
 		qmark.x = cmd.qosconnmark;
-#if !defined(LS1043)
 		if ( (qmark.qosmark_ds.ds_flag) &&
 			(((ctEntry->fpp_dir & ORIGINATOR) &&
 			(is_wan_port_ifindex(nfct_get_attr_u32(ctEntry->ct, ATTR_ORIG_COMCERTO_FP_IIF)) &&
@@ -715,9 +714,9 @@ int cmmFeCtUpdate6(cpal_handle_t *cpal_handler, int action, struct ctTable *ctEn
 		 * the queue, DSCP marking parameters, and VLAN p-bit settings with the twin connection.
 		 */
 
+#if !defined(LS1043)
 		qosconnmark_t qmark;
 		qmark.x = cmd.qosconnmark;
-#if !defined(LS1043)
 		if ( (qmark.qosmark_ds.ds_flag) &&
 			(((ctEntry->fpp_dir & ORIGINATOR) &&
 			(is_wan_port_ifindex(nfct_get_attr_u32(ctEntry->ct, ATTR_ORIG_COMCERTO_FP_IIF)) &&
@@ -1210,6 +1209,7 @@ int __cmmFeRouteUpdate(cpal_handle_t* cpal_handler, int action, struct fpp_rt *f
 			cmm_print(DEBUG_ERROR, "%s: __itf_get_name(%d) failed\n", __func__, fpp_route->oifindex);
 			goto err;
 		}
+#if 0
 #ifdef LS1043
 		if (__itf_get_name(fpp_route->iifindex, cmd.input_device, sizeof(cmd.input_device)) < 0 &&
 						!(fpp_route->flags & IS_LOCAL))
@@ -1224,6 +1224,7 @@ int __cmmFeRouteUpdate(cpal_handle_t* cpal_handler, int action, struct fpp_rt *f
 			cmm_print(DEBUG_INFO, "%s: __itf_get_name(%d) failed (underlying input device)\n", __func__, fpp_route->underlying_iifindex);
 			goto err;
 		}
+#endif
 #endif
 
 #ifdef VLAN_FILTER

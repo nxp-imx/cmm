@@ -72,7 +72,7 @@ typedef struct cmmd_socket_open_cmd {
 #else
 	u_int16_t	pad2;
 #endif //LS1043
-} __attribute__((__packed__)) cmmd_socket_open_cmd_t;
+} cmmd_socket_open_cmd_t;
 
 typedef struct cmmd_socket_update_cmd {
 	u_int16_t	id;
@@ -416,7 +416,7 @@ typedef struct cmmd_l2tp_session {
         u_int8_t	queue;
 	u_int8_t	rsvd;
 	u_int16_t	rsvd2;
-} __attribute__((__packed__)) cmmd_l2tp_session_t;
+} cmmd_l2tp_session_t;
 
 #endif
 

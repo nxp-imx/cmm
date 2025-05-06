@@ -740,7 +740,6 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 	struct ipv4_info entry_orig = {}, entry_reply = {};
 	fpp_ct_ex_cmd_t *response;
 
-	printf("*****############# in XDP conntrack register/update.....\n");
 	key_orig.saddr = cmd_buf->saddr;
 	key_orig.daddr = cmd_buf->daddr;
 	key_orig.sport = cmd_buf->sport;
@@ -754,12 +753,12 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 	key_reply.protocol = cmd_buf->protocol;
 
 
-	cmm_print(DEBUG_INFO, "%s: action=%u\n", __func__, cmd_buf->action);
+	cmm_print(DEBUG_INFO, "BPF: %s: action=%u\n", __func__, cmd_buf->action);
 	switch(cmd_buf->action)
 	{
 	case FPP_ACTION_DEREGISTER:
 		//FIXME Do we need a refcount for routes?
-		printf(" CPAL In connection de register\n");
+		cmm_print(DEBUG_INFO, "BPF: In connection de-register\n");
 		rc_orig = bpf_map_lookup_elem(handle->ipv4_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv4_fd, &key_reply, &entry_reply);
 
@@ -776,7 +775,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		break;
 
 	case FPP_ACTION_REGISTER:
-		printf("#################CPAL In connection register................\n");
+		cmm_print(DEBUG_INFO, "BPF: In connection register\n");
 		rc_orig = bpf_map_lookup_elem(handle->ipv4_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv4_fd, &key_reply, &entry_reply);
 
@@ -803,7 +802,6 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		else
 			entry_orig.mtu = route_info[entry_orig.route_ifindex].mtu;
 
-		entry_orig.mtu = 1500;
 		entry_reply.nat_saddr = cmd_buf->daddr;
 		entry_reply.nat_daddr = cmd_buf->saddr;
 		entry_reply.nat_sport = cmd_buf->dport;
@@ -814,19 +812,18 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		else
 			entry_reply.last_timer = current_timer;
 
-		printf("**** conn route id = %d flags for disable reply = 0x%x\n", cmd_buf->route_id_reply, cmd_buf->flags);
-//		if (cmd_buf->flags & CTCMD_FLAGS_REP_DISABLED)
-//			entry_reply.route_ifindex = -1;
-//		else
+		if (cmd_buf->flags & CTCMD_FLAGS_REP_DISABLED)
+			entry_reply.route_ifindex = -1;
+		else
 			entry_reply.route_ifindex = find_route_id(cmd_buf->route_id_reply);
 		if (entry_reply.route_ifindex < 0)
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): invalid route for reply entry\n", __func__);
 		else
 			entry_reply.mtu = route_info[entry_reply.route_ifindex].mtu;
 
-		entry_reply.mtu = 1500;
-		printf("rouet if = %d and reply = %d and mtu = %d\n", entry_orig.route_ifindex, entry_reply.route_ifindex,
-						route_info[entry_reply.route_ifindex].mtu);
+		cmm_print(DEBUG_INFO, "BPF: conn route idx= %d, route ridx = %d and mtu = %d\n",
+				entry_orig.route_ifindex, entry_reply.route_ifindex,
+				route_info[entry_reply.route_ifindex].mtu);
 		set_ipv4_checksum_correction(&key_orig, &entry_orig);
 		set_ipv4_checksum_correction(&key_reply, &entry_reply);
 
@@ -839,14 +836,13 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 			}
 		}
 
-		printf("CPAL add success %d\n", rc_orig);
-
 		if ((rc_orig == -1) || (rc_reply == -1)) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): Error encountered: %d(%s) (%d %d)\n",
 					__func__, errno, strerror(errno), rc_orig, rc_reply);
 			return bpf_error(0, errn);
 		}
+		cmm_print(DEBUG_INFO, "BPF: Conn. add success %d\n", rc_orig);
 
 		break;
 
@@ -1136,9 +1132,6 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 	struct interface *itf;
 	fpp_rt_cmd_t *response;
 
-	/* HACK */
-	cmd_buf->mtu = 1500;
-
 	switch(cmd_buf->action)
 	{
 	case FPP_ACTION_DEREGISTER:
@@ -1158,11 +1151,11 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 	case FPP_ACTION_REGISTER:
 	case FPP_ACTION_UPDATE:
 
+		cmm_print(DEBUG_INFO, "BPF: In Route register/update\n");
 		route_key = hash_route_id(cmd_buf->id);
 		if (route_key < 0)
 			return FPP_ERR_NOT_ENOUGH_MEMORY;
 
-		printf("############# in XDP route register/update.....route key = %d\n", route_key);
 		rc = bpf_map_lookup_elem(handle->route_fd, &route_key, &route_entry);
 
 		if (rc == -1)
@@ -1203,9 +1196,7 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 			route_entry.redir_ifindex = itf->ifindex;
 		}
 
-		printf("CPAL route entry add redire_ifindex ................. %d and route key %d mtu =%d\n", route_entry.redir_ifindex, route_key, cmd_buf->mtu);
-		//route_entry.redir_if_type = itf->type;
-		route_entry.redir_if_type = ARPHRD_ETHER;
+		route_entry.redir_if_type = itf->type;
 		route_entry.flags = 0;
 		route_entry.mtu = cmd_buf->mtu;
 
@@ -1492,7 +1483,7 @@ exit:
 
 int cpal_cmd(cpal_handle_t *handle, unsigned short fcode, unsigned short *cmd_buf, unsigned short cmd_len, unsigned short *rep_buf, unsigned short *rep_len)
 {
-	printf("############################## In cpal cmd , fcode =%x\n", fcode);
+	cmm_print(DEBUG_INFO, "BPF: cpal cmd code =%x\n", fcode);
 	switch (fcode) {
 	case FPP_CMD_IPV4_CONNTRACK:
 		if ((cmd_len != sizeof(fpp_ct_cmd_t)) && (cmd_len != sizeof(fpp_ct_ex_cmd_t)))

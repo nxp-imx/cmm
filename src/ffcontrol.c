@@ -471,6 +471,7 @@ int cmmFcDebugShow(struct cli_def * cli, const char *command, char *argv[], int 
 asymFFRule_t cmmFcAsymFFRuleAddAttribut(asymFFRule_t rule, int attributType, int attributValue, char *attrStrValue, int attributWidth, int mask)
 {
 	asymFFRule_t temp;
+	int ret;
 
 	temp = (asymFFRule_t) malloc(sizeof(asymFFRule));
 	if (temp ==NULL)
@@ -479,8 +480,9 @@ asymFFRule_t cmmFcAsymFFRuleAddAttribut(asymFFRule_t rule, int attributType, int
 	temp->next = rule;
 	temp->type = attributType;
 	temp->value = attributValue;
-	strncpy(temp->strValue, attrStrValue, sizeof(temp->strValue));
-	STR_TRUNC_END(temp->strValue , sizeof(temp->strValue));
+	ret = snprintf(temp->strValue, sizeof(temp->strValue), "%s", attrStrValue);
+	if (ret < 0)
+		cmm_print(DEBUG_ERROR, "attrStrValue copy Fails");
 	temp->width = attributWidth;
 	temp->mask = mask;
 
@@ -495,6 +497,7 @@ asymFFRule_t cmmFcAsymFFRuleAddAttribut(asymFFRule_t rule, int attributType, int
 struct asymFFRuleList * cmmFcAsymFFListAddRule(struct asymFFRuleList *list, char * ruleName, asymFFRule_t rule)
 {
 	struct asymFFRuleList * temp;
+	int ret;
 
 	temp = (struct asymFFRuleList *) malloc(sizeof(struct asymFFRuleList));
 	if (temp == NULL)
@@ -502,8 +505,10 @@ struct asymFFRuleList * cmmFcAsymFFListAddRule(struct asymFFRuleList *list, char
 
 	temp->next = list;
 	temp->rule = rule;
-	strncpy(temp->name, ruleName, sizeof(temp->name));
-	STR_TRUNC_END(temp->name , sizeof(temp->name));
+	ret = snprintf(temp->name, sizeof(temp->name), "%s", ruleName);
+	if (ret < 0)
+		cmm_print(DEBUG_ERROR, "Rule name copy Fails");
+	
 	return temp;
 }
 
@@ -690,6 +695,7 @@ denyRule_t cmmFcRuleAddAttribut(denyRule_t rule, int attributType, int attributV
 struct denyRuleList * cmmFcListAddRule(struct denyRuleList *list, char * ruleName, denyRule_t rule)
 {
 	struct denyRuleList * temp;
+	int ret;
 
 	temp = (struct denyRuleList *) malloc(sizeof(struct denyRuleList));
 	if (temp == NULL)
@@ -697,8 +703,9 @@ struct denyRuleList * cmmFcListAddRule(struct denyRuleList *list, char * ruleNam
 
 	temp->next = list;
 	temp->rule = rule;
-	strncpy(temp->name, ruleName, sizeof(temp->name));
-	STR_TRUNC_END(temp->name , sizeof(temp->name));
+	ret = snprintf(temp->name, sizeof(temp->name), "%s", ruleName);
+	if (ret < 0)
+		cmm_print(DEBUG_ERROR, "Rule name copy Fails");
 	return temp;
 }
 
@@ -2122,7 +2129,7 @@ static int cmmQmDSCPFqMapQueryCmd(struct cli_def * cli, const char *command, cha
  *   *   *   *   * *
  *    *    *    *    * *
  *     *     *     *     * ******************************************************************/
-static int cmmQmFFRateQueryCmd(struct cli_def * cli, char *command, char *argv[], int argc)
+static int cmmQmFFRateQueryCmd(struct cli_def * cli, const char *command, char *argv[], int argc)
 {
   /*Call process function*/
    cmmQmFFRateQueryProcess(argv, 0, globalConf.cli.daemon_handle);
@@ -2665,6 +2672,7 @@ int cmmCliInit(struct cmm_cli *ctx)
 		cli_register_command(ctx->handle, c, "connections", cmmCtShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the table of fast forwarded connections");
 		cli_register_command(ctx->handle, c, "fpp_route", cmmFPPRtShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the fpp route entries used by the fast forwarded connections");
 		cli_register_command(ctx->handle, c, "route", cmmRtShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the route entries used by the fast forwarded connections");
+		cli_register_command(ctx->handle, c, "interfaces", cmmInfShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the interfaces currently accessible");
 		cli_register_command(ctx->handle, c, "neighbor", cmmNeighShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the neighbor entries used by the fast forwarded connections");
 		cli_register_command(ctx->handle, c, "rules", cmmFcRulesShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the table of non fast forwardable connections");
 		cli_register_command(ctx->handle, c, "debug_level", cmmFcDebugShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the debug level");

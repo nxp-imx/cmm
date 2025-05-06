@@ -1049,7 +1049,7 @@ int __tunnel_update(cpal_handle_t *cpal_handle, struct interface *itf)
  ************************************************************/
 static int tunnel_show(cpal_handle_t *cpal_handle, char *name, u_int16_t *res_buf, u_int16_t *res_len)
 {
-	int ifindex;
+	int ifindex, ret;
 	struct interface *itf;
 	struct tunnel_info *pInfo;
 
@@ -1082,7 +1082,9 @@ static int tunnel_show(cpal_handle_t *cpal_handle, char *name, u_int16_t *res_bu
 		res_buf[0] = CMMD_ERR_OK;
 		pInfo = (struct tunnel_info*)((uint8_t *)res_buf + 4);	
 		pInfo->tunnel_family = itf->tunnel_family;
-		strncpy(pInfo->ifname, itf->ifname, IFNAMSIZ -1);	
+		ret = snprintf(pInfo->ifname, IFNAMSIZ -1, "%s", itf->ifname);
+		if (ret < 0)
+			goto err;
 		pInfo->phys_ifindex = itf->phys_ifindex;
 		pInfo->ipsec = (itf->tunnel_flags & TNL_IPSEC);
 		pInfo->itf_programmed = (itf->flags & FPP_PROGRAMMED) ? 1 : 0;

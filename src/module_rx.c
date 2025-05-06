@@ -410,12 +410,14 @@ int cmm_l2flow_netlink_rcv(const struct sockaddr_nl *who, struct nlmsghdr *nlh, 
 int cmmFeBridgedIfUpdate(cpal_handle_t *cpal_handle, int fd, struct interface *itf)
 {
         struct fpp_bridged_itf_cmd br_cmd;
+	int ret;
 
 	if ((itf->flags & (FPP_PROGRAMMED | FPP_NEEDS_UPDATE)) == FPP_PROGRAMMED)
 		return 0;
 
-	strncpy(br_cmd.ifname, itf->ifname , IFNAMSIZ);
-	STR_TRUNC_END(br_cmd.ifname, IFNAMSIZ);
+	ret = snprintf(br_cmd.ifname, IFNAMSIZ, "%s", itf->ifname);
+	if (ret < 0)
+		cmm_print(DEBUG_ERROR, "Ifname copy Fails");
 
 	if (__itf_is_bridged_port(itf))
 	{

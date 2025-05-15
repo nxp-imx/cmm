@@ -1733,8 +1733,8 @@ int cmmFcParser(char *confFilePath)
 	fp = fopen(confFilePath , "r");
 	if (!fp)
 	{
-		cmm_print(DEBUG_CRIT, "cmmFcParser: Error opening %s\n", confFilePath);
-		return -1;
+		cmm_print(DEBUG_INFO, "cmmFcParser: Error opening %s\n", confFilePath);
+		return 0;
 	}
 
 #ifdef WIFI_ENABLE
@@ -1821,6 +1821,7 @@ int cmmFcParser(char *confFilePath)
 	return ret;
 }
 
+#if 0
 /*****************************************************************
 * cmmRxCmd
 *
@@ -2307,6 +2308,7 @@ static int cmmPTstatus(struct cli_def * cli, const char *command, char *argv[], 
 	return CLI_OK;
 }
 
+#endif
 /*****************************************************************
 * cmmVlan commands
 *
@@ -2327,7 +2329,7 @@ static int cmmVlanCliDelete(struct cli_def *cli, const char *command, char *argv
 	return CLI_OK;
 }
 
-
+#if 0
 /*****************************************************************
 * cmmPktCap commands
 *
@@ -2443,6 +2445,7 @@ static int cmmIpv6Cmd(struct cli_def * cli, const char *command, char *argv[], i
 	return CLI_OK;
 }
 
+#endif
 int cmmFFControlProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handle)
 {
 	int cpt = tabStart;
@@ -2482,7 +2485,6 @@ usage:
 	cmm_print(DEBUG_ERROR, "Usage: set ff <enable disable>\n");
 	return -1;
 }
-
 int cmmIPsecSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handle)
 {
 	int cpt = tabStart;
@@ -2571,6 +2573,7 @@ static void cliCallback(struct cli_def *cliHandle, const char *format)
 		fprintf(cliHandle->client, "%s\r\n", format);
 }
 
+#if 0
 /*****************************************************************
 * cmmBridgeControlCmd
 *
@@ -2583,7 +2586,7 @@ static int cmmBridgeControlCmd(struct cli_def * cli, const char *command, char *
 
 	return CLI_OK;
 }
-
+#endif
 /*****************************************************************
 * cmmCliThread()
 *
@@ -2619,7 +2622,6 @@ static void *cmmCliThread(void *data)
 
 	return NULL;
 }
-
 
 /*****************************************************************
 * cmmCliInit()
@@ -2680,6 +2682,7 @@ int cmmCliInit(struct cmm_cli *ctx)
 		cli_register_command(ctx->handle, c, "pppoe", cmmPPPoELocalShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the pppoe entries used by the fast forwarded connections");
 		cli_register_command(ctx->handle, c, "vlan", cmmVlanLocalShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the vlan entries programmmed");
 		cli_register_command(ctx->handle, c, "macvlan", cmmMacVlanLocalShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the macvlan entries programmmed");
+#if 0
 		cli_register_command(ctx->handle, c, "rx", cmmShowRxCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show ICC, Bridge status");
 		cli_register_command(ctx->handle, c, "stat", cmmShowStatCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show Statistics");
 		cli_register_command(ctx->handle, c, "sa_query_timer", cmmSaQueryTimerShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the DPD SA query timer configuration");
@@ -2695,8 +2698,10 @@ int cmmCliInit(struct cmm_cli *ctx)
 #endif
 		cli_register_command(ctx->handle, c, "asym_fastforward", cmmAsymFFEnableShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the Asymmetric fast forward status");
 		cli_register_command(ctx->handle, c, "asym_ff_rules", cmmFcAsymFFRulesShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the table of asymmetric fast forwardable connections");
+#endif
 	}
 
+#if 0
         c = cli_register_command(ctx->handle, NULL, "query", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 	{
@@ -2731,13 +2736,14 @@ int cmmCliInit(struct cmm_cli *ctx)
                 cli_register_command(ctx->handle, c, "qmffrate", cmmQmFFRateQueryCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query rate configured  for fast path");
 #endif
 	}
-
+#endif
 	//	cli_register_command(ctx->handle, pshow, "eth_icc", cmmEthIccShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show the pppoe entries used by the fast forwarded connections");
 	c = cli_register_command(ctx->handle, NULL, "set", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 	{
 		cli_register_command(ctx->handle, c, "activate", cmmFcActivate, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Activate or desactivate fast forwarding");
 		cli_register_command(ctx->handle, c, "debug", cmmFcDebug, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Debug level");
+#if 0
 		cli_register_command(ctx->handle, c, "rx", cmmRxCmd, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Manage RX module (ICC, Bridge ...)");
 #ifdef LS1043
 		cli_register_command(ctx->handle, c, "tx", cmmTxCmd, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Manage TX module (DSCP VLAN P bit map)");
@@ -2762,8 +2768,9 @@ int cmmCliInit(struct cmm_cli *ctx)
 #endif
 		cli_register_command(ctx->handle, c, "asym_fastforward", cmmAsymFFEnableCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Enable or disable Asymmetric Fast forward");
 		cli_register_command(ctx->handle, c, "4rd-id-conversion", cmm4rdIdConvCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Enable or disable 4rd Ipv4  header ID conversion");
+#endif
 	}
-
+#if 0
 	c = cli_register_command(ctx->handle, NULL, "ipv4", cmmIpv4Cmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 		cli_register_command(ctx->handle, c, "update", cmmIpv4Cmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Update IPv4 Connection");
@@ -2772,8 +2779,10 @@ int cmmCliInit(struct cmm_cli *ctx)
 	if (c)
 		cli_register_command(ctx->handle, c, "update", cmmIpv6Cmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Update IPv6 Connection");
 
+#endif
 	cli_register_command(ctx->handle, NULL, "stop", cmmFcStop, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Kill cmm");
-
+	cli_register_command(ctx->handle, NULL, "kill", cmmFcStop, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Kill cmm");
+#if 0
 	c = cli_register_command(ctx->handle, NULL, "prf",NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 	{
@@ -2796,6 +2805,7 @@ int cmmCliInit(struct cmm_cli *ctx)
 		cli_register_command(ctx->handle, c, "bytes", cmmMspMem, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show msp memory in host order");
 		cli_register_command(ctx->handle, c, "words", cmmMspMemW, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Show msp memory in network order");
 	}
+#endif
 
 	c = cli_register_command(ctx->handle, NULL, "vlan",NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
@@ -2805,6 +2815,7 @@ int cmmCliInit(struct cmm_cli *ctx)
 		cli_register_command(ctx->handle, c, "show", cmmVlanLocalShow, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Deregister vlan with fpp");
 	}
 
+#if 0
 	c = cli_register_command(ctx->handle, NULL, "pktcapture", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 	{
@@ -2830,7 +2841,7 @@ int cmmCliInit(struct cmm_cli *ctx)
 		cli_register_command(ctx->handle, c, "query", cmmIccQuery, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, 
 								"Query ICC table values");
 	}
-
+#endif
 
 	ctx->sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (ctx->sock < 0)

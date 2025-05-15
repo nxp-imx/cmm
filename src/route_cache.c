@@ -586,7 +586,7 @@ int cmmRtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 	struct RtEntry *route;
 	struct list_head *entry;
 	int i, n;
-	char iifname[IFNAMSIZ], oifname[IFNAMSIZ], phys_oifname[IFNAMSIZ];
+	char oifname[IFNAMSIZ], phys_oifname[IFNAMSIZ];
 
 	cli_print(cli, "IPv4 Route:");
 
@@ -605,8 +605,7 @@ int cmmRtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 			inet_ntop(AF_INET, &route->dAddr, daddr_buf, sizeof(daddr_buf));
 			inet_ntop(AF_INET, &route->gwAddr, gw_buf, sizeof(gw_buf));
 
-			cli_print(cli, "IIf: %s (%d), Mark: %08x, Src: %s, Dst: %s --> Gateway: %s, OIf: %s(%d), PhysOif: %s(%d), Count: %d",
-								if_indextoname(route->iifindex, iifname), route->iifindex, route->fwmark,
+			cli_print(cli, "Src: %s, Dst: %s --> Gateway: %s, OIf: %s(%d), PhysOif: %s(%d), Count: %d",
 								saddr_buf, daddr_buf, gw_buf, if_indextoname(route->oifindex, oifname), route->oifindex,
 								if_indextoname(route->phys_oifindex, phys_oifname), route->phys_oifindex, route->count);
 
@@ -635,8 +634,7 @@ int cmmRtShow(struct cli_def * cli, const char *command, char *argv[], int argc)
 			inet_ntop(AF_INET6, route->dAddr, daddr_buf, sizeof(daddr_buf));
 			inet_ntop(AF_INET6, route->gwAddr, gw_buf, sizeof(gw_buf));
 
-			cli_print(cli, "IIf: %s, Mark: %08x, Src: %s, Dst: %s --> Gateway: %s, Oif: %s, PhysOif: %s, Count: %d",
-								if_indextoname(route->iifindex, iifname), route->fwmark,
+			cli_print(cli, "Src: %s, Dst: %s --> Gateway: %s, Oif: %s, PhysOif: %s, Count: %d",
 								saddr_buf, daddr_buf, gw_buf, if_indextoname(route->oifindex, oifname),
 								if_indextoname(route->phys_oifindex, phys_oifname), route->count);
 

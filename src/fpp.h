@@ -164,11 +164,6 @@
 #define FPP_ERR_ALTCONF_MODE_NOT_SUPPORTED              1301
 #define FPP_ERR_ALTCONF_WRONG_NUM_PARAMS                1302
 
-/*-------------------------------- PKTCAP ------------------------------------*/
-#define FPP_ERR_PKTCAP_ALREADY_ENABLED                  1400
-#define FPP_ERR_PKTCAP_NOT_ENABLED                      1401
-#define FPP_ERR_PKTCAP_FLF_RESET                        1402
-
 /*-------------------------------- ICC ---------------------------------------*/
 #define FPP_ERR_ICC_TOO_MANY_ENTRIES                    1500
 #define FPP_ERR_ICC_ENTRY_ALREADY_EXISTS                1501
@@ -2036,39 +2031,6 @@ typedef struct fpp_frag_timeout_cmd {
     u_int16_t   mode;
 } fpp_frag_timeout_cmd_t;
 
-/*-------------------------------- PKTCAP ------------------------------------*/
-#define FPP_CMD_PKTCAP_IFSTATUS                         0x0d02
-#define FPP_CMD_PKTCAP_FLF                              0x0d03
-#define FPP_CMD_PKTCAP_SLICE                            0x0d04
-#define FPP_CMD_PKTCAP_QUERY                            0x0d05
-
-#define FPP_PKTCAP_STATUS                               0x1
-#define FPP_PKTCAP_SLICE                                0x2
-#define MAX_FLF_INSTRUCTIONS                            30
-
-typedef struct fpp_pktcap_status_cmd{
-    u_int16_t   action;
-    u_int8_t    ifindex;
-    u_int8_t    status;
-} fpp_pktcap_status_cmd_t;
-
-typedef struct fpp_pktcap_slice_cmd{
-    u_int16_t   action;
-    u_int8_t    ifindex;
-    u_int8_t    rsvd;
-    u_int16_t   slice;
-} fpp_pktcap_slice_cmd_t;
-
-typedef struct fpp_pktcap_query_cmd{
-    u_int16_t   slice;
-    u_int16_t   status;
-} fpp_pktcap_query_cmd_t;
-
-/* struct fpp_pktcap_flf_cmd is defined in module_pktcap.c because it makes use of
- * the struct bpf_insn definition contained in pcap.h.
- */
-typedef struct fpp_pktcap_flf_cmd fpp_pktcap_flf_cmd_t;
-/*-------------------------------- PKTCAP ------------------------------------*/
 /*-------------------------------- TX BEGIN ---------------------------*/
 /* 0x0500 - 0x05FF */
 /* TX commands - begin */

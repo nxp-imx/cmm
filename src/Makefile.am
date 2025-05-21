@@ -56,7 +56,6 @@ cmm_SOURCES = 	neighbor_resolution.c  \
 		module_wifi.c \
 		alt_conf.c \
 		voicebuf.c \
-		module_pktcap.c \
 		module_icc.c \
 		third_part.c \
 		cmm_asym_ff.c \
@@ -73,7 +72,7 @@ else
 CPAL_LIB = -lfci
 cmm_SOURCES += cpal_fci.c
 endif
-cmm_LDADD = -lpthread -lcli libcmm.la -lpcap @CMM_LIBS@ $(CPAL_LIB)
+cmm_LDADD = -lpthread -lcli libcmm.la  @CMM_LIBS@ $(CPAL_LIB)
 cmm_DEPENDENCIES = libcmm.la
 
 libcmm_sample_SOURCES = libcmm_sample.c

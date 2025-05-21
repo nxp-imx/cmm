@@ -170,11 +170,6 @@ char * getErrorString(unsigned short error)
 	caseretstr(FPP_ERR_ALTCONF_MODE_NOT_SUPPORTED);
 	caseretstr(FPP_ERR_ALTCONF_WRONG_NUM_PARAMS);
 
-	/*-------------------------------- PKTCAP --------------------------------*/
-	caseretstr(FPP_ERR_PKTCAP_ALREADY_ENABLED);
-	caseretstr(FPP_ERR_PKTCAP_NOT_ENABLED);
-	caseretstr(FPP_ERR_PKTCAP_FLF_RESET);
-
 	/*-------------------------------- ICC -----------------------------------*/
 	caseretstr(FPP_ERR_ICC_TOO_MANY_ENTRIES);
 	caseretstr(FPP_ERR_ICC_ENTRY_ALREADY_EXISTS);
@@ -297,7 +292,7 @@ void cmmClientPrintHelp()
 									"\tmacvlan: Mac-vlan interfaces\n"
 									"\ttunnels: tunnel interfaces\n");
 
-	cmm_print(DEBUG_STDOUT, "\nCommand usage: { msp | dm | prf | tunnel | relay | vlan | pktcapture | icc | ipv4 |ipv6 } <options> \n");
+	cmm_print(DEBUG_STDOUT, "\nCommand usage: { msp | dm | prf | tunnel | relay | vlan | icc | ipv4 |ipv6 } <options> \n");
 
 }
 
@@ -870,34 +865,6 @@ int cmmClientProcessCmd(char * command, int argc, char ** argv, daemon_handle_t 
 				return -1;
 		}
 	}
-	else if (strcasecmp(keywords[0], "pktcapture") == 0)
-        {
-                if (cpt < 2)
-                        goto help;
-
-                if (strcasecmp(keywords[1], "status") == 0)
-                {
-                        if (PktCapStatProcess(daemon_handle, cpt-2,  &keywords[2]))
-                                return -1;
-                }
-                else if (strcasecmp(keywords[1], "slice") == 0)
-                {
-                        if (PktCapSliceProcess(daemon_handle, cpt-2,&keywords[2]))
-                                return -1;
-                }
-                else if (strcasecmp(keywords[1], "filter") == 0)
-                {
-                        if (PktCapFilterProcess(daemon_handle , cpt-2 , &keywords[2]))
-                                return -1;
-                }
-		else
-		{
-			char buf[128];
-			print_all_gemac_ports(buf, 128);
-			cmm_print(DEBUG_STDOUT, "Command usage: pktcapture [status| slice| filter] [%s] <value>\n", buf);
-		}
-		
-        }
 	else if (strcasecmp(keywords[0], "icc") == 0)
         {
                 if (cpt < 2)
@@ -1471,10 +1438,6 @@ static int cmmCommandParse(struct cmm_daemon *ctx, int function_code, u_int8_t *
 	case FPP_CMD_RTP_STATS_DTMF_PT:
 	case FPP_CMD_NATPT_CLOSE:
 	case FPP_CMD_NATPT_QUERY:
-	case FPP_CMD_PKTCAP_IFSTATUS:
-	case FPP_CMD_PKTCAP_SLICE:
-	case FPP_CMD_PKTCAP_FLF:
-	case FPP_CMD_PKTCAP_QUERY:
 	case FPP_CMD_MACVLAN_ENTRY:
 	case FPP_CMD_TUNNEL_QUERY:
 	case FPP_CMD_TUNNEL_QUERY_CONT:

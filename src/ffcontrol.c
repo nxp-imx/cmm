@@ -2330,38 +2330,6 @@ static int cmmVlanCliDelete(struct cli_def *cli, const char *command, char *argv
 }
 
 #if 0
-/*****************************************************************
-* cmmPktCap commands
-*
-*
-******************************************************************/
-static int cmmPktCapSlice(struct cli_def *cli, const char *command, char *argv[], int argc)
-{
-	
-  	PktCapSliceProcess(globalConf.cli.daemon_handle, argc, argv);
-	return CLI_OK;
-}
-
-static int cmmPktCapStat(struct cli_def *cli, const char *command, char *argv[], int argc)
-{
-  	PktCapStatProcess(globalConf.cli.daemon_handle, argc, argv);
-	return CLI_OK;
-}
-
-
-static int cmmPktCapFilter(struct cli_def *cli, const char *command, char *argv[], int argc)
-{
-  	PktCapFilterProcess(globalConf.cli.daemon_handle, argc, argv);
-	return CLI_OK;
-}
-
-
-static int cmmPktCapQuery(struct cli_def *cli, const char *command, char *argv[], int argc)
-{
-  	PktCapQueryProcess(cli , globalConf.cli.daemon_handle);
-	return CLI_OK;
-}
-
 
 /*****************************************************************
 * cmmIcc commands
@@ -2727,7 +2695,6 @@ int cmmCliInit(struct cmm_cli *ctx)
         	cli_register_command(ctx->handle, c, "secfailstats", cmmSECfailStatsQueryCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query SEC engine failure statistics");
 #endif
         	cli_register_command(ctx->handle, c, "natpt", cmmQueryNatptCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query NAT-PT connections");
-		cli_register_command(ctx->handle, c, "pktcapture", cmmPktCapQuery, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query packet capture config parameters");
 		cli_register_command(ctx->handle, c, "tunnels",cmmQueryTnlCmd , PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query tunnel parameters");
 #ifdef AUTO_BRIDGE
 		cli_register_command(ctx->handle, c, "l2flows", cmmQueryL2FlowCmd, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Query L2Flows entries on FPP");
@@ -2816,17 +2783,6 @@ int cmmCliInit(struct cmm_cli *ctx)
 	}
 
 #if 0
-	c = cli_register_command(ctx->handle, NULL, "pktcapture", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
-	if (c)
-	{
-		cli_register_command(ctx->handle, c, "slice", cmmPktCapSlice, PRIVILEGE_UNPRIVILEGED, MODE_EXEC,
-								"Register packet capture size with fpp");
-		cli_register_command(ctx->handle, c, "status", cmmPktCapStat, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, 
-								"Enable/disable packet capture on LAN/WAN with fpp");
-		cli_register_command(ctx->handle, c, "filter", cmmPktCapFilter, PRIVILEGE_UNPRIVILEGED, MODE_EXEC,
-								 "Register first-level-filter string for LAN/WAN with fpp");
-	}
-
 	c = cli_register_command(ctx->handle, NULL, "icc", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "");
 	if (c)
 	{

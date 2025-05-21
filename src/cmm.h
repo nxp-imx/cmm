@@ -81,7 +81,6 @@
 	#include "module_socket.h"
 	#include "module_rtp.h"
 	#include "module_natpt.h"
-	#include "module_pktcap.h"
 	#include "module_icc.h"
 	#include "module_ipsec.h"
 	#include "third_part.h"

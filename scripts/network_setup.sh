@@ -2,8 +2,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright 2025 NXP
 
-# Usage: ./network_setup.sh <iface1> <ip1> <iface2> <ip2> ...
-# Example: ./network_setup.sh eth0 1.1.1.2 eth1 2.1.1.2 eth2 3.1.1.2
+# Usage: ./network_setup.sh [-p] <iface1> <ip1> <iface2> <ip2> ...
+# Example: ./network_setup.sh -p eth0 1.1.1.2 eth1 2.1.1.2
+
+PROMISC=0
+
+# Check for -p flag
+if [[ "$1" == "-p" ]]; then
+    PROMISC=1
+    shift
+fi
 
 if (( $# % 2 != 0 )); then
     echo "Error: Arguments must be in pairs of <interface> <IP address>"
@@ -33,6 +41,12 @@ while (( "$#" )); do
     # Bring interface up
     ip link set $IFACE up
 
+    # Enable promiscuous mode if requested
+    if (( PROMISC )); then
+        echo "Enabling promiscuous mode on $IFACE"
+        ip link set $IFACE promisc on
+    fi
+
     # Shift to next pair
     shift 2
 done
@@ -45,4 +59,3 @@ iptables -t nat -L -n
 iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 echo "All interfaces configured successfully."
-

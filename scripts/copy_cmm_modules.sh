@@ -8,7 +8,7 @@
 # Optionally, the user can provide a custom search path as the first argument.
 
 # Space-separated list of modules
-modules="nf_defrag_ipv4.ko nf_defrag_ipv6.ko nf_conntrack.ko nf_nat.ko x_tables.ko xt_nat.ko xt_MASQUERADE.ko ip_tables.ko iptable_filter.ko iptable_nat.ko xt_conntrack.ko nf_conntrack_netlink.ko"
+modules="nf_defrag_ipv4.ko nf_defrag_ipv6.ko nf_conntrack.ko nf_nat.ko x_tables.ko xt_nat.ko xt_MASQUERADE.ko ip_tables.ko iptable_filter.ko iptable_nat.ko xt_conntrack.ko nf_conntrack_netlink.ko ip6_tables.ko ip6table_filter.ko ip6table_nat.ko"
 
 # Use first argument as Linux tree root or default to current directory
 LINUX_TREE="${1:-.}"

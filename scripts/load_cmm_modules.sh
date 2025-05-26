@@ -21,6 +21,9 @@ modules=(
   iptable_nat.ko
   xt_conntrack.ko
   nf_conntrack_netlink.ko
+  ip6_tables.ko
+  ip6table_nat.ko
+  ip6table_filter.ko
 )
 
 # Use first argument as root path or default to "/"

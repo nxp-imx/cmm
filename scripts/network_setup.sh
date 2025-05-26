@@ -8,6 +8,7 @@
 # default IPv6 subnet is 64 and IPv4 is 24
 
 PROMISC=0
+HAS_IPV6=0
 
 # Check for -p flag
 if [[ "$1" == "-p" ]]; then
@@ -57,6 +58,7 @@ while (( "$#" )); do
 
       echo "Assigning IPv6 address ${IPADDR}/64 to $IFACE"
       ip -6 addr add ${IPADDR}/64 dev $IFACE
+      HAS_IPV6=1
     else
       ip addr add ${IPADDR}/24 dev $IFACE
     fi
@@ -77,5 +79,12 @@ iptables -t nat -L -n
 
 # Allow forwarding of established connections (IPv4)
 iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# IPv6 NAT and forwarding rules only if IPv6 was used
+if (( HAS_IPV6 )); then
+	ip6tables -t nat -F
+	ip6tables -t nat -L -n
+	ip6tables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+fi
 
 echo "All interfaces configured successfully."

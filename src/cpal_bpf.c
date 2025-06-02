@@ -795,6 +795,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		entry_orig.nat_dport = cmd_buf->sport_reply;
 		entry_orig.flags = FP_INFO_FLAG_CONNTRACK_ORIG;
 		entry_orig.last_timer = current_timer;
+		entry_orig.last_time_ns = entry_orig.rate_limit = entry_orig.bytes_count = 0;
 
 		entry_orig.route_ifindex = find_route_id(cmd_buf->route_id);
 		if (entry_orig.route_ifindex < 0)
@@ -807,6 +808,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		entry_reply.nat_sport = cmd_buf->dport;
 		entry_reply.nat_dport = cmd_buf->sport;
 		entry_reply.flags = 0;
+		entry_reply.last_time_ns = entry_reply.rate_limit = entry_reply.bytes_count = 0;
 		if (key_reply.protocol == IPPROTO_UDP)
 			entry_reply.last_timer = UDP_REPLY_TIMER_INF;
 		else
@@ -817,7 +819,8 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		else
 			entry_reply.route_ifindex = find_route_id(cmd_buf->route_id_reply);
 		if (entry_reply.route_ifindex < 0)
-			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): invalid route for reply entry\n", __func__);
+			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): invalid route %d for reply entry\n", __func__,
+					entry_reply.route_ifindex);
 		else
 			entry_reply.mtu = route_info[entry_reply.route_ifindex].mtu;
 
@@ -993,6 +996,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		entry_orig.nat_dport = cmd_buf->sport_reply;
 		entry_orig.flags = FP_INFO_FLAG_CONNTRACK_ORIG;
 		entry_orig.last_timer = current_timer;
+		entry_orig.last_time_ns = entry_orig.rate_limit = entry_orig.bytes_count = 0;
 
 		entry_orig.route_ifindex = find_route_id(cmd_buf->route_id);
 		if (entry_orig.route_ifindex < 0)
@@ -1005,6 +1009,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		entry_reply.nat_sport = cmd_buf->dport;
 		entry_reply.nat_dport = cmd_buf->sport;
 		entry_reply.flags = 0;
+		entry_reply.last_time_ns = entry_reply.rate_limit = entry_reply.bytes_count = 0;
 		if (key_reply.protocol == IPPROTO_UDP)
 			entry_reply.last_timer = UDP_REPLY_TIMER_INF;
 		else

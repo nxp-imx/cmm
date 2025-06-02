@@ -58,6 +58,9 @@ struct ipv4_info {
 	int route_ifindex;
 	unsigned int last_timer;
 	uint16_t mtu;
+	uint64_t last_time_ns;
+	uint64_t rate_limit;
+	uint64_t bytes_count;
 };
 
 struct ipv6_flow {
@@ -79,6 +82,9 @@ struct ipv6_info {
 	int route_ifindex;
 	unsigned int last_timer;
 	uint16_t mtu;
+	uint64_t last_time_ns;
+	uint64_t rate_limit;
+	uint64_t bytes_count;
 };
 
 #endif

@@ -1,18 +1,21 @@
-NXP Software Content Register
+Software Content Register
 -----------------------------
-Connection Monitoring Manager
 
-Release Name:       Version: 19.01
-Package:	    Connection Monitoring Manager
-Release Location:   github.com/nxp
-
-
-Description:               Connection Montitoring Manager for offloading linux kernel connection and offloading the info
-				the register entity like FCI, XDP-BPF or DPDK program
-Version:                   19.01
-Author:                    NXP
-License:                   Open Source - BSD-3-Clause OR GPL-2.0 (Dual)
-Format:                    source code
-URL:                       https://github.com/nxp/cmm/
-Location:                  common_headers
-
+Package:	   	Connection Monitoring Manager
+Description:            Connection Montitoring Manager for offloading linux kernel connection and offloading the info
+			the register entity like FCI, XDP-BPF or DPDK program
+Version:                19.01
+Author:                 NXP
+Outgoing License:       GPL-2.0-or-later
+License File:           LICENSE
+Package Category:       BSP
+Type of Content:        source
+Release Location:       https://github.com/nxp-imx/fpr-cmm
+Origin:                 NXP (GPL-2.0-or-later)
+Dependencies:		libnfnetlink - netfilter.org (GPLv2+) - https://git.netfilter.org/libnfnetlink
+			libmnl - netfilter.org (LGPLv2.1+) - https://netfilter.org/projects/libmnl/
+			libnetfilter_conntrack - netfilter.org (GPLv2+) - https://netfilter.org/projects/libnetfilter_conntrack/
+			libxcrypt (LGPLv2.1) - https://github.com/besser82/libxcrypt
+			libcli - David Parrish (LGPLv2.1) - https://github.com/dparrish/libcli
+			zlib - (BSD-3-Clause)
+			xdp-tools - (GPL-2.0) - https://github.com/xdp-project/xdp-tools

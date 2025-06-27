@@ -1,8 +1,6 @@
 /* Copyright 2019,2025 NXP
  *
- * SPDX-License-Identifier: GPL-2.0-only
- * The GPL-2.0 license for this file can be found in the COPYING file
- * included with this distribution or at http://www.gnu.org/licenses/gpl-2.0.html
+ * SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0+)
  */
 
 #include <stddef.h>

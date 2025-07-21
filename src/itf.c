@@ -685,6 +685,9 @@ static void __itf_update(struct interface_table *ctx, struct interface *itf, str
 	{
 		cmm_print(DEBUG_ERROR, "%s: Error - interface(%d) is down\n", __func__, itf->ifindex);
 		goto out;
+	} else {
+		cmm_print(DEBUG_INFO,"lets programm the interface which is up\n");
+		itf->flags |= FPP_PROGRAMMED;
 	}
 
 #ifdef WIFI_ENABLE

@@ -65,7 +65,7 @@ cmm_SOURCES = 	neighbor_resolution.c  \
 		module_ipr.c
 
 if CPAL_BPF
-CPAL_LIB = -lbpf
+CPAL_LIB = -lelf -lbpf
 AM_CFLAGS += -DCPAL_BPF=1
 cmm_SOURCES += cpal_bpf.c
 else

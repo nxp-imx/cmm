@@ -81,4 +81,5 @@ libcmm_sample_DEPENDENCIES = libcmm.la
 
 
 lib_LTLIBRARIES = libcmm.la
+libcmm_la_LDFLAGS = -version-info 19:1:0
 libcmm_la_SOURCES = libcmm.c

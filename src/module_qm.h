@@ -46,8 +46,10 @@ int cmmQmShowProcess(char ** keywords, int tabSize, daemon_handle_t daemon_handl
 int cmmQmQueryProcess(char ** keywords, int tabSize, daemon_handle_t daemon_handle);
 int cmmQmExptRateQueryProcess(char ** keywords, int tabSize, daemon_handle_t daemon_handle);
 int cmmQmSetProcess(char ** keywords, int tabSize, daemon_handle_t daemon_handle);
-void cmmQmResetQ2Prio(fpp_qm_reset_cmd_t *cmdp, int cmdlen);
 void cmmQmUpdateQ2Prio(fpp_qm_scheduler_cfg_t *cmdp, int cmdlen);
+#if defined(COMCERTO_2000) || defined(LS1043)
+void cmmQmResetQ2Prio(fpp_qm_reset_cmd_t *cmdp, int cmdlen);
+#endif
 #ifdef LS1043
 int cmmQmFFRateQueryProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handle);
 int cmmQmDSCPFqMapQueryProcess(char ** keywords, int tabSize, daemon_handle_t daemon_handle);

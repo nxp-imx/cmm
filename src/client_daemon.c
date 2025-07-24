@@ -673,12 +673,14 @@ int cmmClientProcessCmd(char * command, int argc, char ** argv, daemon_handle_t 
 			if(cmmQmQueryProcess(keywords, 2, daemon_handle))
 				return -1;
 		}
+#if defined(COMCERTO_2000) || defined(LS1043)
 		else if (strcasecmp(keywords[1], "qmingress") == 0)
 		{
 			/*Call QM process function*/
 			if(cmmQmIngressQueryProcess(keywords, 2, daemon_handle))
 				return -1;
 		}
+#endif
 #ifdef SEC_PROFILE_SUPPORT
 		else if (strcasecmp(keywords[1], "qmsecrate") == 0)
 		{
@@ -1309,15 +1311,15 @@ static int cmmCommandParse(struct cmm_daemon *ctx, int function_code, u_int8_t *
 
 	// Special processing for QM Reset and Scheduler config (need to notify eth driver)
 	
-#ifndef LS1043
+#if !defined(LS1043) && defined(COMCERTO_2000)
 	case FPP_CMD_QM_RESET:
 		cmmQmResetQ2Prio((fpp_qm_reset_cmd_t *)cmd_buf, cmd_len);
 		goto CPAL_CMD;
 
+#endif
 	case FPP_CMD_QM_SCHED_CFG:
 		cmmQmUpdateQ2Prio((fpp_qm_scheduler_cfg_t *)cmd_buf, cmd_len);
 		goto CPAL_CMD;
-#endif
 #ifdef LS1043
         case FPP_CMD_QM_QUERY_FF_RATE:
                 goto CPAL_CMD;

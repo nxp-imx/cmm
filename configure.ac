@@ -20,6 +20,23 @@ LIBNFCONNTRACK_REQUIRED=0.0.16
 PKG_CHECK_MODULES(LIBNFCONNTRACK, libnetfilter_conntrack >= $LIBNFCONNTRACK_REQUIRED,,
 	AC_MSG_ERROR(Cannot find libnetfilter_conntrack >= $LIBNFNCONNTRACK_REQUIRED))
 
+AC_MSG_CHECKING([for BASELIB environment variable])
+if test -n "$BASELIB"; then
+  # Use the value from the environment if it exists
+  libdir_suffix="$BASELIB"
+else
+  # Default to 'lib' if the variable is not set
+  libdir_suffix="lib"
+fi
+AC_MSG_RESULT([$libdir_suffix])
+
+# Define a new directory variable for Automake
+baselibdir="${libdir}"
+if test "$libdir_suffix" != "lib"; then
+  baselibdir='${exec_prefix}/'"$libdir_suffix"
+fi
+AC_SUBST(baselibdir)
+
 CFLAGS="$CFLAGS $LIBNFCONNTRACK_CFLAGS"
 CMM_LIBS="$LIBNFCONNTRACK_LIBS"
 AC_SUBST(CMM_LIBS)

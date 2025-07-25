@@ -74,12 +74,13 @@ cmm_SOURCES += cpal_fci.c
 endif
 cmm_LDADD = -lpthread -lcli libcmm.la  @CMM_LIBS@ $(CPAL_LIB)
 cmm_DEPENDENCIES = libcmm.la
+cmm_LDFLAGS = -L${top_builddir}
 
 libcmm_sample_SOURCES = libcmm_sample.c
 libcmm_sample_LDADD = libcmm.la
 libcmm_sample_DEPENDENCIES = libcmm.la
 
 
-lib_LTLIBRARIES = libcmm.la
+baselib_LTLIBRARIES = libcmm.la
 libcmm_la_LDFLAGS = -version-info 19:1:0
 libcmm_la_SOURCES = libcmm.c

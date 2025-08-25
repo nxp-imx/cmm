@@ -197,7 +197,7 @@ char * getErrorString(unsigned short error)
 void showErrorMsg(char *commandCodeString, unsigned int source, char *rxBuffer)
 {
 	char *errString = getErrorString(((unsigned short*)rxBuffer)[0]);
-	char resString[255];
+	char resString[255] = {0};
 	int length = strlen(errString);
 
 	if (length >= ERR_CODE_PREFIX_LENGTH)

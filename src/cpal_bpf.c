@@ -819,12 +819,12 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		if (entry_reply.route_ifindex < 0)
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): invalid route %d for reply entry\n", __func__,
 					entry_reply.route_ifindex);
-		else
+		else {
 			entry_reply.mtu = route_info[entry_reply.route_ifindex].mtu;
-
-		cmm_print(DEBUG_INFO, "BPF: conn route idx= %d, route ridx = %d and mtu = %d\n",
-				entry_orig.route_ifindex, entry_reply.route_ifindex,
-				route_info[entry_reply.route_ifindex].mtu);
+			cmm_print(DEBUG_INFO, "BPF: conn route idx= %d, route ridx = %d and mtu = %d\n",
+					entry_orig.route_ifindex, entry_reply.route_ifindex,
+					route_info[entry_reply.route_ifindex].mtu);
+		}
 		set_ipv4_checksum_correction(&key_orig, &entry_orig);
 		set_ipv4_checksum_correction(&key_reply, &entry_reply);
 

@@ -1644,7 +1644,7 @@ static void cmmSendSAExpireEvent(fpp_stat_ipsec_entry_response_t *pEntryResponse
 	else 
 	{
 		cmm_print(DEBUG_ERROR, "ERROR: Incorrect SA Family(0x%x). Not sending Expire event.", pEntryResponse->family );
-		return;
+		goto clean;
 	}
 	pSa->id.spi = htonl(pEntryResponse->spi);
 	pSa->id.proto = pEntryResponse->proto;

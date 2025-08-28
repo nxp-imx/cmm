@@ -283,6 +283,7 @@ int vlanAddProcess(daemon_handle_t daemon_handle, int argc, char *argv[])
 	if (argc < 1)
 		goto usage;
 
+	memset(&cmd, 0, sizeof(cmd));
 	cmd.action = CMMD_ACTION_REGISTER;
 	cmd.vlan_id = 0;
 	strncpy(cmd.vlan_ifname, argv[0], IFNAMSIZ);

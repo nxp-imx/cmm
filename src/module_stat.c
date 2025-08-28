@@ -645,6 +645,7 @@ int cmmStatShowProcess(char ** keywords, int tabStart, daemon_handle_t daemon_ha
 		int count = 0;
 		fpp_stat_ipsec_entry_response_t *pEntryResponse = (fpp_stat_ipsec_entry_response_t *)rxbuf.rcvBuffer;
 		/* Send CMD_STAT_IPSEC_STATUS command */
+		memset(&ipsecStatusCmd, 0, sizeof(ipsecStatusCmd));
 		rcvBytes = cmmSendToDaemon(daemon_handle, FPP_CMD_STAT_IPSEC_STATUS, &ipsecStatusCmd, sizeof(ipsecStatusCmd),rxbuf.rcvBuffer);
 		if (rcvBytes != 2)
 		{

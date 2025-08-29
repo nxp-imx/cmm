@@ -10,7 +10,7 @@ Outgoing License:       GPL-2.0-or-later
 License File:           LICENSE
 Package Category:       BSP
 Type of Content:        source
-Release Location:       https://github.com/nxp-imx/fpr-cmm
+Release Location:       https://github.com/nxp-imx/cmm
 Origin:                 NXP (GPL-2.0-or-later)
 			libnfnetlink - netfilter.org (GPLv2+) - https://git.netfilter.org/libnfnetlink
 			libmnl - netfilter.org (LGPLv2.1+) - https://netfilter.org/projects/libmnl/

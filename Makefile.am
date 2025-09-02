@@ -1,5 +1,6 @@
 
 AM_CFLAGS = -O2 -g -Wall
 ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS	= src

@@ -266,7 +266,7 @@ cpal_handle_t *cpal_ff_catch_open(void)
 
 	if (bpf_handle) {
 		bpf_handle->ff_catch_fd = timerfd_create(CLOCK_REALTIME, TFD_NONBLOCK);
-		if (bpf_handle->ff_catch_fd == -1) {
+		if (bpf_handle->ff_catch_fd < 0) {
 			cmm_print(DEBUG_ERROR, "CPAL catch handle creation failed: timerfd_create: %s(%d)\n",
 				strerror(errno), errno);
 			cpal_close(bpf_handle);
@@ -279,7 +279,7 @@ cpal_handle_t *cpal_ff_catch_open(void)
 		timeouts.other_proto_timeout = OTHER_PROTO_TIMEOUT * CPAL_TICKS_PER_SECOND;
 
 		rc = timerfd_settime(bpf_handle->ff_catch_fd, 0, &timer_val, NULL);
-		if (rc == -1) {
+		if (rc < 0) {
 			cmm_print(DEBUG_ERROR, "CPAL catch handle creation failed: timerfd_settime: %s(%d)\n",
 				strerror(errno), errno);
 			cpal_close(bpf_handle);
@@ -303,7 +303,7 @@ static int check_ipv4_timeout(cpal_handle_t *handle)
 
 	while (count < (MAX_IPV4_ENTRIES >> CONNECTION_CHECK_RATIO_LOG)) {
 		rc = bpf_map_get_next_key(handle->ipv4_fd, &handle->timeout_ipv4_next_key, &handle->timeout_ipv4_next_key);
-		if (rc == -1) {
+		if (rc < 0) {
 			// Not an error, we reached the end of the table, so we can exit
 			if (errno == ENOENT) {
 				rc = 0;
@@ -317,7 +317,7 @@ static int check_ipv4_timeout(cpal_handle_t *handle)
 		}
 
 		rc = bpf_map_lookup_elem(handle->ipv4_fd, &handle->timeout_ipv4_next_key, &ipv4_entry);
-		if (rc == -1) {
+		if (rc < 0) {
 			cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 					__func__, __LINE__, errno, strerror(errno));
 			count++;
@@ -332,7 +332,7 @@ static int check_ipv4_timeout(cpal_handle_t *handle)
 			ipv4_key_reply.protocol = handle->timeout_ipv4_next_key.protocol;
 
 			rc = bpf_map_lookup_elem(handle->ipv4_fd, &ipv4_key_reply, &ipv4_entry_reply);
-			if (rc == -1) {
+			if (rc < 0) {
 				cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 					__func__, __LINE__, errno, strerror(errno));
 				count++;
@@ -349,7 +349,7 @@ static int check_ipv4_timeout(cpal_handle_t *handle)
 					ipv4_entry.last_timer = current_timer;
 
 					rc = bpf_map_update_elem(handle->ipv4_fd, &handle->timeout_ipv4_next_key, &ipv4_entry, BPF_EXIST);
-					if (rc == -1) {
+					if (rc < 0) {
 						cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 								__func__, __LINE__, errno, strerror(errno));
 						continue;
@@ -361,7 +361,7 @@ static int check_ipv4_timeout(cpal_handle_t *handle)
 					ipv4_entry_reply.last_timer = current_timer;
 
 					rc = bpf_map_update_elem(handle->ipv4_fd, &ipv4_key_reply, &ipv4_entry_reply, BPF_EXIST);
-					if (rc == -1) {
+					if (rc < 0) {
 						cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 								__func__, __LINE__, errno, strerror(errno));
 						continue;
@@ -420,7 +420,7 @@ static int check_ipv6_timeout(cpal_handle_t *handle)
 
 	while (count < (MAX_IPV6_ENTRIES >> CONNECTION_CHECK_RATIO_LOG)) {
 		rc = bpf_map_get_next_key(handle->ipv6_fd, &handle->timeout_ipv6_next_key, &handle->timeout_ipv6_next_key);
-		if (rc == -1) {
+		if (rc < 0) {
 			// Not an error, we reached the end of the table, so we can exit
 			if (errno == ENOENT) {
 				rc = 0;
@@ -433,7 +433,7 @@ static int check_ipv6_timeout(cpal_handle_t *handle)
 		}
 
 		rc = bpf_map_lookup_elem(handle->ipv6_fd, &handle->timeout_ipv6_next_key, &ipv6_entry);
-		if (rc == -1) {
+		if (rc < 0) {
 			cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 					__func__, __LINE__, errno, strerror(errno));
 			continue;
@@ -447,7 +447,7 @@ static int check_ipv6_timeout(cpal_handle_t *handle)
 			ipv6_key_reply.protocol = handle->timeout_ipv6_next_key.protocol;
 
 			rc = bpf_map_lookup_elem(handle->ipv6_fd, &ipv6_key_reply, &ipv6_entry_reply);
-			if (rc == -1) {
+			if (rc < 0) {
 				cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 					__func__, __LINE__, errno, strerror(errno));
 				continue;
@@ -463,7 +463,7 @@ static int check_ipv6_timeout(cpal_handle_t *handle)
 					ipv6_entry.last_timer = current_timer;
 
 					rc = bpf_map_update_elem(handle->ipv6_fd, &handle->timeout_ipv6_next_key, &ipv6_entry, BPF_EXIST);
-					if (rc == -1) {
+					if (rc < 0) {
 						cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 								__func__, __LINE__, errno, strerror(errno));
 						continue;
@@ -475,7 +475,7 @@ static int check_ipv6_timeout(cpal_handle_t *handle)
 					ipv6_entry_reply.last_timer = current_timer;
 
 					rc = bpf_map_update_elem(handle->ipv6_fd, &ipv6_key_reply, &ipv6_entry_reply, BPF_EXIST);
-					if (rc == -1) {
+					if (rc < 0) {
 						cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during timeout check: %d(%s)\n",
 								__func__, __LINE__, errno, strerror(errno));
 						continue;
@@ -533,7 +533,7 @@ static int reset_ipv4_timeouts(cpal_handle_t *handle)
 	for (count = 0; count < MAX_IPV4_ENTRIES; count++) {
 		rc = bpf_map_get_next_key(handle->ipv4_fd, &handle->timeout_ipv4_next_key,
 				&handle->timeout_ipv4_next_key);
-		if (rc == -1) {
+		if (rc < 0) {
 			if (errno == ENOENT) {
 				rc = 0;
 				memset(&handle->timeout_ipv4_next_key, 0, sizeof(struct ipv4_flow));
@@ -545,7 +545,7 @@ static int reset_ipv4_timeouts(cpal_handle_t *handle)
 
 		rc = bpf_map_lookup_elem(handle->ipv4_fd, &handle->timeout_ipv4_next_key,
 				&ipv4_entry);
-		if (rc == -1) {
+		if (rc < 0) {
 			count++;
 			continue;
 		}
@@ -558,7 +558,7 @@ static int reset_ipv4_timeouts(cpal_handle_t *handle)
 			ipv4_key_reply.protocol = handle->timeout_ipv4_next_key.protocol;
 
 			rc = bpf_map_lookup_elem(handle->ipv4_fd, &ipv4_key_reply, &ipv4_entry_reply);
-			if (rc == -1) {
+			if (rc < 0) {
 				count++;
 				continue;
 			}
@@ -567,7 +567,7 @@ static int reset_ipv4_timeouts(cpal_handle_t *handle)
 			ipv4_entry.last_timer = current_timer;
 			rc = bpf_map_update_elem(handle->ipv4_fd, &handle->timeout_ipv4_next_key,
 					&ipv4_entry, BPF_EXIST);
-			if (rc == -1) {
+			if (rc < 0) {
 				count++;
 				continue;
 			}
@@ -577,7 +577,7 @@ static int reset_ipv4_timeouts(cpal_handle_t *handle)
 				ipv4_entry_reply.last_timer = current_timer;
 				rc = bpf_map_update_elem(handle->ipv4_fd, &ipv4_key_reply,
 						&ipv4_entry_reply, BPF_EXIST);
-				if (rc == -1) {
+				if (rc < 0) {
 					count++;
 					continue;
 				}
@@ -599,7 +599,7 @@ static int reset_ipv6_timeouts(cpal_handle_t *handle)
 	for (count = 0; count < MAX_IPV6_ENTRIES; count++) {
 		rc = bpf_map_get_next_key(handle->ipv6_fd, &handle->timeout_ipv6_next_key,
 				&handle->timeout_ipv6_next_key);
-		if (rc == -1) {
+		if (rc < 0) {
 			if (errno == ENOENT) {
 				rc = 0;
 				memset(&handle->timeout_ipv6_next_key, 0, sizeof(struct ipv6_flow));
@@ -611,7 +611,7 @@ static int reset_ipv6_timeouts(cpal_handle_t *handle)
 
 		rc = bpf_map_lookup_elem(handle->ipv6_fd, &handle->timeout_ipv6_next_key,
 				&ipv6_entry);
-		if (rc == -1) {
+		if (rc < 0) {
 			count++;
 			continue;
 		}
@@ -624,7 +624,7 @@ static int reset_ipv6_timeouts(cpal_handle_t *handle)
 			ipv6_key_reply.protocol = handle->timeout_ipv6_next_key.protocol;
 
 			rc = bpf_map_lookup_elem(handle->ipv6_fd, &ipv6_key_reply, &ipv6_entry_reply);
-			if (rc == -1) {
+			if (rc < 0) {
 				count++;
 				continue;
 			}
@@ -633,7 +633,7 @@ static int reset_ipv6_timeouts(cpal_handle_t *handle)
 			ipv6_entry.last_timer = current_timer;
 			rc = bpf_map_update_elem(handle->ipv6_fd, &handle->timeout_ipv6_next_key,
 					&ipv6_entry, BPF_EXIST);
-			if (rc == -1) {
+			if (rc < 0) {
 				count++;
 				continue;
 			}
@@ -643,7 +643,7 @@ static int reset_ipv6_timeouts(cpal_handle_t *handle)
 				ipv6_entry_reply.last_timer = current_timer;
 				rc = bpf_map_update_elem(handle->ipv6_fd, &ipv6_key_reply,
 						&ipv6_entry_reply, BPF_EXIST);
-				if (rc == -1) {
+				if (rc < 0) {
 					count++;
 					continue;
 				}
@@ -760,7 +760,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		rc_orig = bpf_map_lookup_elem(handle->ipv4_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv4_fd, &key_reply, &entry_reply);
 
-		if ((rc_orig == -1) || (rc_reply == -1) || ((entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG) != FP_INFO_FLAG_CONNTRACK_ORIG)) {
+		if ((rc_orig < 0) || (rc_reply < 0) || ((entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG) != FP_INFO_FLAG_CONNTRACK_ORIG)) {
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_DEREGISTER): ct entry not found (%d %d)\n", __func__, rc_orig, rc_reply);
 			return FPP_ERR_CT_ENTRY_NOT_FOUND;
 		}
@@ -831,13 +831,13 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		rc_orig = bpf_map_update_elem(handle->ipv4_fd, &key_orig, &entry_orig, BPF_NOEXIST);
 		if (rc_orig == 0) {
 			rc_reply = bpf_map_update_elem(handle->ipv4_fd, &key_reply, &entry_reply, BPF_NOEXIST);
-			if (rc_reply == -1) {
+			if (rc_reply < 0) {
 				cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): error updating ct reply entry\n", __func__);
 				bpf_map_delete_elem(handle->ipv4_fd, &key_orig);
 			}
 		}
 
-		if ((rc_orig == -1) || (rc_reply == -1)) {
+		if ((rc_orig < 0) || (rc_reply < 0)) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): Error encountered: %d(%s) (%d %d)\n",
 					__func__, errno, strerror(errno), rc_orig, rc_reply);
@@ -851,7 +851,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		rc_orig = bpf_map_lookup_elem(handle->ipv4_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv4_fd, &key_reply, &entry_reply);
 
-		if (rc_orig == -1 || rc_reply == -1 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
+		if (rc_orig < 0 || rc_reply < 0 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_UPDATE): ct entry not found (%d %d)\n", __func__, rc_orig, rc_reply);
 			return FPP_ERR_CT_ENTRY_NOT_FOUND;
 		}
@@ -875,7 +875,7 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		if (rc_orig == 0)
 			rc_reply = bpf_map_update_elem(handle->ipv4_fd, &key_reply, &entry_reply, BPF_ANY);
 
-		if (rc_orig == -1 || rc_reply == -1) {
+		if (rc_orig < 0 || rc_reply < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_UPDATE): Error encountered: %d(%s) (%d %d)\n",
 					__func__, errno, strerror(errno), rc_orig, rc_reply);
@@ -898,13 +898,13 @@ static int cpal_IPV4_CONNTRACK(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf, uns
 		*rep_len = sizeof(unsigned short);
 
 		rc_orig = bpf_map_get_next_key(handle->ipv4_fd, &handle->query_ipv4_next_key, &handle->query_ipv4_next_key);
-		if (rc_orig == -1) {
+		if (rc_orig < 0) {
 			*rep_buf = bpf_error(0, errno);
 			goto exit;
 		}
 
 		rc_orig = bpf_map_lookup_elem(handle->ipv4_fd, &handle->query_ipv4_next_key, &entry_orig);
-		if (rc_orig == -1) {
+		if (rc_orig < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_QUERY) Error encountered: %d(%s)\n",
 					__func__, errno, strerror(errno));
@@ -962,7 +962,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		rc_orig = bpf_map_lookup_elem(handle->ipv6_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv6_fd, &key_reply, &entry_reply);
 
-		if (rc_orig == -1 || rc_reply == -1 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
+		if (rc_orig < 0 || rc_reply < 0 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_DEREGISTER): ct entry not found (%d %d)\n", __func__, rc_orig, rc_reply);
 			return FPP_ERR_CT_ENTRY_NOT_FOUND;
 		}
@@ -1028,13 +1028,13 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		rc_orig = bpf_map_update_elem(handle->ipv6_fd, &key_orig, &entry_orig, BPF_NOEXIST);
 		if (rc_orig == 0) {
 			rc_reply = bpf_map_update_elem(handle->ipv6_fd, &key_reply, &entry_reply, BPF_NOEXIST);
-			if (rc_reply == -1) {
+			if (rc_reply < 0) {
 				cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): error updating ct reply entry\n", __func__);
 				bpf_map_delete_elem(handle->ipv6_fd, &key_orig);
 			}
 		}
 
-		if (rc_orig == -1 || rc_reply == -1) {
+		if (rc_orig < 0 || rc_reply < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_REGISTER): Error encountered: %d(%s) (%d %d)\n",
 					__func__, errno, strerror(errno), rc_orig, rc_reply);
@@ -1047,7 +1047,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		rc_orig = bpf_map_lookup_elem(handle->ipv6_fd, &key_orig, &entry_orig);
 		rc_reply = bpf_map_lookup_elem(handle->ipv6_fd, &key_reply, &entry_reply);
 
-		if (rc_orig == -1 || rc_reply == -1 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
+		if (rc_orig < 0 || rc_reply < 0 || !(entry_orig.flags & FP_INFO_FLAG_CONNTRACK_ORIG)) {
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_UPDATE): ct entry not found (%d %d)\n", __func__, rc_orig, rc_reply);
 			return FPP_ERR_CT_ENTRY_NOT_FOUND;
 		}
@@ -1071,7 +1071,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		if (rc_orig == 0)
 			rc_reply = bpf_map_update_elem(handle->ipv6_fd, &key_reply, &entry_reply, BPF_ANY);
 
-		if (rc_orig == -1 || rc_reply == -1) {
+		if (rc_orig < 0 || rc_reply < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_UPDATE): Error encountered: %d(%s) (%d %d)\n",
 					__func__, errno, strerror(errno), rc_orig, rc_reply);
@@ -1094,7 +1094,7 @@ static int cpal_IPV6_CONNTRACK(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf, un
 		*rep_len = sizeof(unsigned short);
 
 		rc_orig = bpf_map_get_next_key(handle->ipv6_fd, &handle->query_ipv6_next_key, &handle->query_ipv6_next_key);
-		if (rc_orig == -1) {
+		if (rc_orig < 0) {
 			cmm_print(DEBUG_ERROR, "%s(FPP_ACTION_QUERY) Error encountered: %d(%s)\n",
 				__func__, errno, strerror(errno));
 			*rep_buf = bpf_error(0, errno);
@@ -1145,7 +1145,7 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 
 		memset(&route_entry, 0, sizeof(struct route));
 		rc = bpf_map_update_elem(handle->route_fd, &route_key, &route_entry, BPF_ANY);
-		if (rc == -1)
+		if (rc < 0)
 			return bpf_error(1, errno);
 		route_info[route_key].id = 0;
 		route_info[route_key].mtu = 0;
@@ -1161,7 +1161,7 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 
 		rc = bpf_map_lookup_elem(handle->route_fd, &route_key, &route_entry);
 
-		if (rc == -1)
+		if (rc < 0)
 			return bpf_error(1, errno);
 
 		if ((cmd_buf->action == FPP_ACTION_REGISTER) && (route_entry.redir_ifindex != 0))
@@ -1176,7 +1176,7 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 
 		if (itf->type != ARPHRD_RAWIP) {
 			rc = __itf_get_macaddr(itf, route_entry.l2_hdr + ETH_ALEN);
-			if (rc == -1)
+			if (rc < 0)
 				return FPP_ERR_UNKNOWN_INTERFACE;
 
 			memcpy(route_entry.l2_hdr, cmd_buf->dst_mac, ETH_ALEN);
@@ -1208,7 +1208,7 @@ static int cpal_IP_ROUTE(cpal_handle_t *handle, fpp_rt_cmd_t *cmd_buf, unsigned 
 				route_entry.redir_if_type, route_entry.mtu);
 
 		rc = bpf_map_update_elem(handle->route_fd, &route_key, &route_entry, BPF_ANY);
-		if (rc == -1) {
+		if (rc < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during ROUTE REGISTER/UPDATE: %d(%s)\n",
 					__func__, __LINE__,errno, strerror(errno));
@@ -1239,7 +1239,7 @@ again:
 		}
 
 		rc = bpf_map_lookup_elem(handle->route_fd, &handle->route_key, &route_entry);
-		if (rc == -1) {
+		if (rc < 0) {
 			int errn = errno;
 			cmm_print(DEBUG_ERROR, "%s(%d) Error encountered during ROUTE QUERY: %d(%s)\n",
 					__func__, __LINE__,errno, strerror(errno));
@@ -1253,7 +1253,7 @@ again:
 			goto again;
 
 		rc = __itf_get_name(route_entry.redir_ifindex, response->output_device, IFNAMSIZ);
-		if (rc == -1)
+		if (rc < 0)
 			return FPP_ERR_UNKNOWN_INTERFACE;
 
 		response->mtu = route_entry.mtu;
@@ -1281,7 +1281,7 @@ static int cpal_ROUTE_RESET(cpal_handle_t *handle)
 
 	do {
 		rc = bpf_map_update_elem(handle->route_fd, &next_key, &route_entry, BPF_ANY);
-		if (rc == -1)
+		if (rc < 0)
 			return bpf_error(1, errno);
 		key = next_key;
 	} while (bpf_map_get_next_key(handle->route_fd, &key, &next_key) == 0);
@@ -1363,7 +1363,7 @@ static int cpal_IPV4_GET_TIMEOUT(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf,
 	key.protocol = cmd_buf->protocol;
 
 	rc = bpf_map_lookup_elem(handle->ipv4_fd, &key, &entry);
-	if (rc == -1 || !(entry.flags & FP_INFO_FLAG_CONNTRACK_ORIG))
+	if (rc < 0 || !(entry.flags & FP_INFO_FLAG_CONNTRACK_ORIG))
 		return FPP_ERR_CT_ENTRY_NOT_FOUND;
 
 	orig_last_timer = entry.last_timer;
@@ -1377,7 +1377,7 @@ static int cpal_IPV4_GET_TIMEOUT(cpal_handle_t *handle, fpp_ct_cmd_t *cmd_buf,
 	key.protocol = cmd_buf->protocol;
 
 	rc = bpf_map_lookup_elem(handle->ipv4_fd, &key, &entry);
-	if (rc == -1)
+	if (rc < 0)
 		return FPP_ERR_CT_ENTRY_NOT_FOUND;
 
 	reply_last_timer = entry.last_timer;
@@ -1418,7 +1418,7 @@ static int cpal_IPV6_GET_TIMEOUT(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf,
 	key.protocol = cmd_buf->protocol;
 
 	rc = bpf_map_lookup_elem(handle->ipv6_fd, &key, &entry);
-	if (rc == -1 || !(entry.flags & FP_INFO_FLAG_CONNTRACK_ORIG))
+	if (rc < 0 || !(entry.flags & FP_INFO_FLAG_CONNTRACK_ORIG))
 		return FPP_ERR_CT_ENTRY_NOT_FOUND;
 
 	orig_last_timer = entry.last_timer;
@@ -1432,7 +1432,7 @@ static int cpal_IPV6_GET_TIMEOUT(cpal_handle_t *handle, fpp_ct6_cmd_t *cmd_buf,
 	key.protocol = cmd_buf->protocol;
 
 	rc = bpf_map_lookup_elem(handle->ipv6_fd, &key, &entry);
-	if (rc == -1)
+	if (rc < 0)
 		return FPP_ERR_CT_ENTRY_NOT_FOUND;
 
 	reply_last_timer = entry.last_timer;
@@ -1463,7 +1463,7 @@ static int cpal_IPV4_FF_CONTROL(cpal_handle_t *handle, fpp_ff_ctrl_cmd_t *cmd_bu
 		ff_enable = 1;
 		entry = 0;
 		rc = bpf_map_update_elem(handle->globals_fd, &key_global, &entry, BPF_ANY);
-		if (rc  == -1) {
+		if (rc  < 0) {
 			rc = bpf_error(0, errno);
 			goto exit;
 		}
@@ -1475,7 +1475,7 @@ static int cpal_IPV4_FF_CONTROL(cpal_handle_t *handle, fpp_ff_ctrl_cmd_t *cmd_bu
 		ff_enable = 0;
 		entry = 1;
 		rc = bpf_map_update_elem(handle->globals_fd, &key_global, &entry, BPF_ANY);
-		if (rc  == -1)
+		if (rc  < 0)
 			rc = bpf_error(0, errno);
 	} else
 		return FPP_ERR_WRONG_COMMAND_PARAM;

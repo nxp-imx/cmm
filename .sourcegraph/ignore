@@ -1,0 +1,31 @@
+# Ignore following Paths
+build/
+doc/
+license/
+
+# Ignore Generated Build Files to make cody light weight
+*.m4
+*.guess
+*.sub
+*.log
+compile
+configure
+depcomp
+install-sh
+ltmain.sh
+Makefile.in
+missing
+LICENSE
+
+# Ignore tempirary and swap files
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Ignore IDE and CI metadata
+.vscode/
+.git/
+.github/
+.gitignore

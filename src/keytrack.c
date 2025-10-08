@@ -477,7 +477,6 @@ void __cmmUpdateFlowDependecies(struct FlowEntry *flow, unsigned int *flsaddr, u
 	char sbuf[INET6_ADDRSTRLEN], dbuf[INET6_ADDRSTRLEN];
 	char ifname[IFNAMSIZ];
 	struct ctTable *ctEntry;
-	struct socket *sock;
 	struct interface *itf;
 	/* Look for connections that use this flow */
 	
@@ -601,6 +600,8 @@ void __cmmUpdateFlowDependecies(struct FlowEntry *flow, unsigned int *flsaddr, u
 
 		__tunnel_add(globalConf.ct.cpal_handle, itf);
 	}
+#if defined(COMCERTO_2000) || defined(LS1043)
+	struct socket *sock;
 
 	/* Look for sockets that use this flow */
 	sock = __cmmSocketFindFromFlow(flow->family, flsaddr, fldaddr, flow->fl.flowi_proto, &orig);
@@ -651,6 +652,7 @@ void __cmmUpdateFlowDependecies(struct FlowEntry *flow, unsigned int *flsaddr, u
 		}
 		__socket_open(globalConf.ct.cpal_handle, sock);
 	}
+#endif
 }
 
 int cmmUpdateFlows(struct SATable *pSAEntry)

@@ -248,8 +248,9 @@ int cmmQmQueryProcess(char ** keywords, int tabStart, daemon_handle_t daemon_han
 		}
 		cmm_print(DEBUG_STDOUT, "%s \n",output_buf);
 	    }
-	    else
+	    else {
             	cmm_print(DEBUG_STDOUT, "QOS: Disabled \n");
+	    }
 
 
 		cmm_print(DEBUG_STDOUT, "Maximum Tx Depth = %d \n", pQmQuery->max_txdepth);
@@ -1800,7 +1801,9 @@ int cmmQmSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handl
 	fpp_qm_expt_rate_cmd_t exptRateCmd;
 	fpp_qm_scheduler_cfg_t schedulerCmd;
 	fpp_qm_shaper_cfg_t shaperCmd;
+#ifdef COMCERTO_2000
 	fpp_qm_reset_cmd_t resetCmd;
+#endif
 	fpp_qm_dscp_queue_mod_t dscpCmd;
 	fpp_qm_queue_qos_enable_cmd_t queueenableCmd;
     
@@ -1816,7 +1819,9 @@ int cmmQmSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handl
 	memset(&exptRateCmd, 0, sizeof(exptRateCmd));
 	memset(&schedulerCmd, 0, sizeof(schedulerCmd));
 	memset(&shaperCmd, 0, sizeof(shaperCmd));
+#ifdef COMCERTO_2000
 	memset(&resetCmd, 0, sizeof(resetCmd));
+#endif
 	memset(&dscpCmd, 0, sizeof(dscpCmd));
 	memset(&queueenableCmd, 0, sizeof(queueenableCmd));
 
@@ -1842,7 +1847,9 @@ int cmmQmSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handl
 			rateLimitCmd.interface = port_id;
 			shaperCmd.interface = port_id;
 			schedulerCmd.interface = port_id;
+#ifdef COMCERTO_2000
 			resetCmd.interface = port_id;
+#endif
 			queueenableCmd.interface = port_id;
 		}
 		else
@@ -2606,7 +2613,7 @@ int cmmQmSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handl
 	 * Parsing have been performed
 	 * Now send the right commands
 	 */
-
+#ifdef COMCERTO_2000
 	if(TEST_CMD_BIT(cmdToSend, FPP_CMD_QM_RESET))
 	{
 		// Send CMD_QM_RATE_LIMIT command
@@ -2616,7 +2623,7 @@ int cmmQmSetProcess(char ** keywords, int tabStart, daemon_handle_t daemon_handl
 				showErrorMsg("CMD_QM_RESET", ERRMSG_SOURCE_FPP, rxbuf.rcvBuffer);
 		}
 	}
-	
+#endif
 	if(TEST_CMD_BIT(cmdToSend, FPP_CMD_QM_QOSENABLE))
 	{
 		// Send CMD_QM_QOSENABLE command
@@ -2728,7 +2735,7 @@ help:
 }
 #endif
 
-
+#if defined(COMCERTO_2000) || defined(LS1043)
 void cmmQmResetQ2Prio(fpp_qm_reset_cmd_t *cmdp, int cmdlen)
 {
 	u_int16_t interface;
@@ -2758,7 +2765,7 @@ void cmmQmResetQ2Prio(fpp_qm_reset_cmd_t *cmdp, int cmdlen)
 	fprintf(fp, "reset\n");
 	fclose(fp);
 }
-
+#endif
 
 void cmmQmUpdateQ2Prio(fpp_qm_scheduler_cfg_t *cmdp, int cmdlen)
 {

@@ -587,14 +587,14 @@ int cmmBridgeInit(struct cmm_ct *ctx)
 
 	if (cmm_nl_open(&ctx->rth_abm, L2FLOW_NL_GRP, NETLINK_L2FLOW) < 0)
 	{
-		cmm_print(DEBUG_CRIT, "%s: Bridge is started in manual mode\n", __func__);
+		cmm_print(DEBUG_INFO, "%s: Bridge is started in manual mode\n", __func__);
 		br_cmd.mode_timeout = FPP_L2_BRIDGE_MODE_MANUAL;
 		globalConf.auto_bridge = 0;
 		
 	}
 	else{
 		br_cmd.mode_timeout = FPP_L2_BRIDGE_MODE_AUTO;
-		cmm_print(DEBUG_CRIT, "%s: Bridge is started in auto mode\n", __func__);
+		cmm_print(DEBUG_INFO, "%s: Bridge is started in auto mode\n", __func__);
 		globalConf.auto_bridge = 1;
 	}
 
@@ -612,7 +612,7 @@ int cmmBridgeInit(struct cmm_ct *ctx)
 int cmmBridgeInit(struct cmm_ct *ctx)
 {
 	globalConf.auto_bridge = 0;
-	cmm_print(DEBUG_CRIT, "%s: Bridge is started in manual mode\n", __func__);
+	cmm_print(DEBUG_INFO, "%s: Bridge is started in manual mode\n", __func__);
 	return 0;
 }
 

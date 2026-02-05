@@ -2,23 +2,23 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "creationInfo": {
-    "created": "2025-11-10T14:11:52Z",
+    "created": "2026-01-30T01:53:54Z",
     "creators": [
       "Organization: NXP"
     ],
-    "licenseListVersion": "3.20"
+    "licenseListVersion": "3.26"
   },
-  "name": "cmm-LF_6.12.49_2.2.0",
+  "name": "cmm-LF_6.18.2_1.0.0",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "https://nxp.com/spdx/439e6a08-945c-49c3-8da3-6a5874659fd9",
+  "documentNamespace": "https://nxp.com/spdx/78fae5b2-e805-4a20-9cf7-7bb6cfb215ae",
   "packages": [
     {
-      "SPDXID": "SPDXRef-package-439e6a08-945c-49c3-8da3-6a5874659fd9",
+      "SPDXID": "SPDXRef-package-78fae5b2-e805-4a20-9cf7-7bb6cfb215ae",
       "name": "cmm",
-      "versionInfo": "LF_6.12.49_2.2.0",
+      "versionInfo": "LF_6.18.2_1.0.0",
       "licenseConcluded": "(GPL-2.0-only)",
       "licenseDeclared": "(GPL-2.0-only)",
-      "downloadLocation": "https://github.com/nxp-imx/cmm -b lf-6.12.49-2.2.0",
+      "downloadLocation": "https://github.com/nxp-imx/cmm -b lf-6.18.2-1.0.0",
       "originator": "Organization: NXP",
       "supplier": "NOASSERTION",
       "externalRefs": [],
@@ -29,7 +29,7 @@
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relationshipType": "DESCRIBES",
-      "relatedSpdxElement": "SPDXRef-package-439e6a08-945c-49c3-8da3-6a5874659fd9"
+      "relatedSpdxElement": "SPDXRef-package-78fae5b2-e805-4a20-9cf7-7bb6cfb215ae"
     }
   ]
 }
